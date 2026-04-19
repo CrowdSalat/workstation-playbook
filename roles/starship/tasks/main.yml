@@ -1,0 +1,30 @@
+---
+- name: Download Starship binary
+  ansible.builtin.get_url:
+    url: "{{ starship_url }}"
+    dest: "{{ ansible_env.HOME }}/starship.tar.gz"
+    mode: "0644"
+    force: true
+  register: starship_download
+
+- name: Unarchive Starship into .local/bin
+  ansible.builtin.unarchive:
+    src: "{{ ansible_env.HOME }}/starship.tar.gz"
+    dest: "{{ local_bin }}"
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    creates: "{{ local_bin }}/starship"
+
+- name: Remove Starship tarball
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/starship.tar.gz"
+    state: absent
+
+- name: Initialize Starship in bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - Starship"
+    block: |
+      eval "$({{ local_bin }}/starship init bash)"
+    create: true
+    insertafter: EOF

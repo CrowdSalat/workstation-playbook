@@ -1,0 +1,27 @@
+---
+- name: Download Cursor AppImage (x86_64)
+  ansible.builtin.get_url:
+    url: "{{ cursor_appimage_url }}"
+    dest: "{{ applications_dir }}/cursor.appimage"
+    mode: "0755"
+    force: true
+
+- name: Make Cursor AppImage executable
+  ansible.builtin.file:
+    path: "{{ applications_dir }}/cursor.appimage"
+    mode: "0755"
+
+- name: Cursor .desktop launcher
+  ansible.builtin.copy:
+    dest: "{{ local_share_apps }}/cursor.desktop"
+    content: |
+      [Desktop Entry]
+      Name=Cursor
+      Comment=AI-powered IDE
+      Exec={{ applications_dir }}/cursor.appimage %F
+      Icon=cursor
+      Type=Application
+      Categories=Development;IDE;TextEditor;
+      MimeType=text/plain;inode/directory;
+      StartupWMClass=Cursor
+    mode: "0644"

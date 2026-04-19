@@ -1,0 +1,3 @@
+---
+starship_version: "1.24.2"
+starship_url: "https://github.com/starship/starship/releases/download/v{{ starship_version }}/starship-x86_64-unknown-linux-gnu.tar.gz"

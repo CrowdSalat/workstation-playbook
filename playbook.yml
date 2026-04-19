@@ -1,0 +1,21 @@
+---
+# Fedora Silverblue workstation setup
+# Prefer Flatpaks for GUI (per-user), ~/.local for CLI binaries. No sudo for flatpaks.
+# Run: ansible-playbook -i inventory/hosts.yml playbook.yml
+# Override vars: -e "git_user_name=Jan" -e "git_user_email=jan@example.com"
+
+- name: Fedora Silverblue workstation
+  hosts: localhost
+  vars_files:
+    - vars/main.yml
+  roles:
+    - { role: bootstrap, tags: [bootstrap] }
+    - { role: starship, tags: [starship] }
+    # Do not tag the role here: both tags on the role apply to every task, so
+    # --tags flatpaks_remove would also run install. Tags live on import_tasks in the role.
+    - role: flatpaks
+    - { role: gnome_shell_extensions, tags: [gnome_shell_extensions] }
+    - { role: vscodium_config, tags: [vscodium_config] }
+    - { role: cursor, tags: [cursor] }
+    - { role: compose, tags: [compose] }
+    - { role: git, tags: [git] }

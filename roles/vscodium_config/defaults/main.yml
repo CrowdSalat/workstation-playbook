@@ -1,0 +1,20 @@
+---
+vscodium_config_dir: "{{ ansible_env.HOME }}/.config/VSCodium/User"
+vscodium_settings: "{{ vscodium_config_dir }}/settings.json"
+toolbox_name: "fedora-toolbox-41"
+vscodium_terminal_json: |
+  {
+      "terminal.integrated.profiles.linux": {
+          "Toolbox (host-spawn)": {
+              "path": "flatpak-spawn",
+              "args": ["--host", "toolbox", "run", "{{ toolbox_name }}", "bash"]
+          }
+      },
+      "terminal.integrated.defaultProfile.linux": "Toolbox (host-spawn)"
+  }
+
+# Open VSX extension IDs (https://open-vsx.org). Requires VSCodium Flatpak installed (flatpaks role).
+vscodium_extensions:
+  - rust-lang.rust-analyzer
+  - golang.go
+  - vscodevim.vim

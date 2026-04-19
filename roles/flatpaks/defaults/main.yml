@@ -1,0 +1,9 @@
+---
+# Per-user Flatpaks under ~/.local/share/flatpak (no admin rights).
+flatpak_flathub_remote_name: flathub
+flatpak_flathub_repo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+
+flatpak_packages:
+  - com.github.tchx84.Flatseal
+  - com.mattjakeman.ExtensionManager
+  - com.vscodium.codium

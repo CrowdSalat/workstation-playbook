@@ -1,0 +1,7 @@
+---
+- name: Download docker-compose binary
+  ansible.builtin.get_url:
+    url: "{{ compose_url }}"
+    dest: "{{ local_bin }}/docker-compose"
+    mode: "0755"
+    force: true

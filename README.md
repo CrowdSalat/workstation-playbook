@@ -7,8 +7,8 @@ Automates user-level setup on Fedora Silverblue: **per-user** Flatpaks (under `~
 ## Prerequisites on the host
 
 - **Python 3** (to create the venv)
-- **`jq`** — used when merging VSCodium `settings.json` (`dnf`/`rpm-ostree` in toolbox, or host if you layer it)
-- **`community.general`** — Ansible collection for the Flatpak modules
+- `**jq`** — used when merging VSCodium `settings.json` (`dnf`/`rpm-ostree` in toolbox, or host if you layer it)
+- `**community.general**` — Ansible collection for the Flatpak modules
 
 ---
 
@@ -30,7 +30,7 @@ Optional: `source .venv/ansible/bin/activate` and then call `ansible-playbook` w
 
 ## What each role does
 
-Use `inventory/hosts.yml` and `playbook.yml` from this repo. Pass **`--tags tag1,tag2`** (comma-separated, no spaces) to run only those roles. The included roles do **not** require sudo.
+Use `inventory/hosts.yml` and `playbook.yml` from this repo. Pass `**--tags tag1,tag2**` (comma-separated, no spaces) to run only those roles. The included roles do **not** require sudo.
 
 **Run all roles:**
 
@@ -55,26 +55,26 @@ Downloads the Starship binary into `~/.local/bin` and adds its init block to `~/
 **Tag:** `starship`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags starship
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags starships
 ```
 
 ### flatpaks
 
-Ensures the **Flathub** remote exists for **your user** (`flatpak remote-add --user`), then installs or removes Flatpaks with **`--user`** under `~/.local/share/flatpak` (no sudo).
+Ensures the **Flathub** remote exists for **your user** (`flatpak remote-add --user`), then installs or removes Flatpaks with `**--user`** under `~/.local/share/flatpak` (no sudo).
 
 Variables in `roles/flatpaks/defaults/main.yml`:
 
-- **`flatpak_packages`** — list of Flatpak **app IDs** to install or uninstall (strings, e.g. `com.vscodium.codium`).
+- `**flatpak_packages**` — list of Flatpak **app IDs** to install or uninstall (strings, e.g. `com.vscodium.codium`).
 
 Install and remove are **separate tags** inside the role (the flatpaks role is not tagged at play level, so `--tags flatpaks_remove` does not run install tasks):
 
-**Tag:** `flatpaks` — install everything listed in **`flatpak_packages`**
+**Tag:** `flatpaks` — install everything listed in `**flatpak_packages`**
 
 ```bash
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags flatpaks
 ```
 
-**Tag:** `flatpaks_remove` — remove everything listed in **`flatpak_packages`**
+**Tag:** `flatpaks_remove` — remove everything listed in `**flatpak_packages`**
 
 ```bash
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags flatpaks_remove
@@ -92,7 +92,7 @@ Ensures `~/.local/share/gnome-shell/extensions` exists for per-user extensions. 
 
 ### vscodium_config
 
-Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox) and adds `code` / `codium` shell aliases. It does **not** install VSCodium; the **flatpaks** role does.
+Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox), installs **Open VSX** extensions listed in **`vscodium_extensions`** (`roles/vscodium_config/defaults/main.yml`) via `flatpak run com.vscodium.codium --install-extension` (needs network), and adds `code` / `codium` shell aliases with **`blockinfile`**. It does **not** install the VSCodium Flatpak; the **flatpaks** role does.
 
 **Tag:** `vscodium_config`
 
