@@ -92,7 +92,13 @@ Ensures `~/.local/share/gnome-shell/extensions` exists for per-user extensions. 
 
 ### vscodium_config
 
-Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox), installs **Open VSX** extensions listed in **`vscodium_extensions`** (`roles/vscodium_config/defaults/main.yml`) via `flatpak run com.vscodium.codium --install-extension` (needs network), and adds `code` / `codium` shell aliases with **`blockinfile`**. It does **not** install the VSCodium Flatpak; the **flatpaks** role does.
+Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox), installs extensions from **`vscodium_extensions`** (`roles/vscodium_config/defaults/main.yml`, needs network for remote VSIX), and adds `code` / `codium` shell aliases with **`blockinfile`**. It does **not** install the VSCodium Flatpak; the **flatpaks** role does.
+
+**`vscodium_extensions`** entries can be:
+
+- **Plain string** — `publisher.extension` via Open VSX / Codium default registry (`--install-extension`).
+- **`url: https://…/file.vsix`** — download VSIX, then install from disk (cache: **`vscodium_vsix_cache_dir`**).
+- **`marketplace:`** — `publisher`, `extension` (short id), `version` (from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/) version you want); downloads the official gallery VSIX then installs it (same as [Certificate Viewer](https://marketplace.visualstudio.com/items?itemName=TimHeuer.pfx-view) style packages).
 
 **Tag:** `vscodium_config`
 

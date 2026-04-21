@@ -35,7 +35,14 @@
   changed_when: vscodium_merge.rc == 0
   failed_when: vscodium_merge.rc != 0
 
-- name: Install VSCodium extensions (Open VSX)
+- name: Ensure VSIX cache directory exists
+  ansible.builtin.file:
+    path: "{{ vscodium_vsix_cache_dir }}"
+    state: directory
+    mode: "0755"
+  when: vscodium_extensions | length > 0
+
+- name: Install VSCodium extensions by id (Open VSX / default registry)
   ansible.builtin.command:
     argv:
       - flatpak
@@ -48,7 +55,21 @@
     'already installed' not in
     ((vscodium_ext_install.stdout | default('')) ~ (vscodium_ext_install.stderr | default(''))) | lower
   failed_when: vscodium_ext_install.rc != 0
-  loop: "{{ vscodium_extensions }}"
+  loop: "{{ vscodium_extensions | reject('mapping') | list }}"
+  when: vscodium_extensions | length > 0
+
+- name: Install VSCodium extensions from VSIX URLs
+  ansible.builtin.include_tasks: extension_url.yml
+  loop: "{{ vscodium_extensions | select('mapping') | selectattr('url', 'defined') | list }}"
+  loop_control:
+    loop_var: ext_item
+  when: vscodium_extensions | length > 0
+
+- name: Install VSCodium extensions from Visual Studio Marketplace VSIX
+  ansible.builtin.include_tasks: extension_marketplace.yml
+  loop: "{{ vscodium_extensions | select('mapping') | selectattr('marketplace', 'defined') | list }}"
+  loop_control:
+    loop_var: ext_item
   when: vscodium_extensions | length > 0
 
 - name: Add code alias to bashrc
