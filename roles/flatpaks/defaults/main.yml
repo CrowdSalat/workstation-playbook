@@ -7,3 +7,4 @@ flatpak_packages:
   - com.github.tchx84.Flatseal
   - com.mattjakeman.ExtensionManager
   - com.vscodium.codium
+  - md.obsidian.Obsidian
