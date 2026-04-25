@@ -92,7 +92,7 @@ Ensures `~/.local/share/gnome-shell/extensions` exists for per-user extensions. 
 
 ### vscodium_config
 
-Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox), installs extensions from **`vscodium_extensions`** (`roles/vscodium_config/defaults/main.yml`, needs network for remote VSIX), and adds `code` / `codium` shell aliases with **`blockinfile`**. It does **not** install the VSCodium Flatpak; the **flatpaks** role does.
+Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox), installs extensions from **`vscodium_extensions`** (`roles/vscodium_config/defaults/main.yml`, needs network for remote VSIX), and adds `code` / `codium` shell functions (forward arguments to Flatpak) with **`blockinfile`**. It does **not** install the VSCodium Flatpak; the **flatpaks** role does.
 
 **`vscodium_extensions`** entries can be:
 

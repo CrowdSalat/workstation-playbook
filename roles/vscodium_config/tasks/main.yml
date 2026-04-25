@@ -72,20 +72,24 @@
     loop_var: ext_item
   when: vscodium_extensions | length > 0
 
-- name: Add code alias to bashrc
+- name: Add code shell function to bashrc
   ansible.builtin.blockinfile:
     path: "{{ bashrc }}"
     marker: "# {mark} ANSIBLE MANAGED - vscodium code alias"
     block: |
-      alias code='flatpak run com.vscodium.codium . >/dev/null 2>&1 &'
+      code() {
+        flatpak run com.vscodium.codium "$@" >/dev/null 2>&1 &
+      }
     create: true
     insertafter: EOF
 
-- name: Add codium alias to bashrc
+- name: Add codium shell function to bashrc
   ansible.builtin.blockinfile:
     path: "{{ bashrc }}"
     marker: "# {mark} ANSIBLE MANAGED - vscodium codium alias"
     block: |
-      alias codium='flatpak run com.vscodium.codium . >/dev/null 2>&1 &'
+      codium() {
+        flatpak run com.vscodium.codium "$@" >/dev/null 2>&1 &
+      }
     create: true
     insertafter: EOF
