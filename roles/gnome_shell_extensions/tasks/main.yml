@@ -3,6 +3,6 @@
 # Use Extension Manager (installed by the flatpaks role) to browse and enable extensions.
 - name: Ensure GNOME Shell user extension directory exists
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.local/share/gnome-shell/extensions"
+    path: "{{ ansible_facts['env']['HOME'] }}/.local/share/gnome-shell/extensions"
     state: directory
     mode: "0755"

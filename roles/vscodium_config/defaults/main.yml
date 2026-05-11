@@ -1,10 +1,10 @@
 ---
-vscodium_config_dir: "{{ ansible_env.HOME }}/.config/VSCodium/User"
+vscodium_config_dir: "{{ ansible_facts['env']['HOME'] }}/.config/VSCodium/User"
 vscodium_settings: "{{ vscodium_config_dir }}/settings.json"
 toolbox_name: "fedora-toolbox-41"
 
 # Downloaded VSIX files (Marketplace / URL) land here before install.
-vscodium_vsix_cache_dir: "{{ ansible_env.HOME }}/.cache/vscodium-vsix"
+vscodium_vsix_cache_dir: "{{ ansible_facts['env']['HOME'] }}/.cache/vscodium-vsix"
 
 vscodium_terminal_json: |
   {
