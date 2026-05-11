@@ -1,6 +1,6 @@
 - name: Remove Flatpaks (user)
   community.general.flatpak:
-    name: "{{ item.name }}"
+    name: "{{ item }}"
     state: absent
     method: user
   loop: "{{ flatpak_packages | list }}"
