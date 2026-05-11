@@ -8,4 +8,5 @@
 - name: Import Flatpak remove tasks
   ansible.builtin.import_tasks: remove.yml
   tags:
+    - never
     - flatpaks_remove
