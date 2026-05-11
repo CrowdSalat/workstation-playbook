@@ -1,0 +1,15 @@
+---
+# CLI tools installed into ~/.local/bin.
+# Each entry requires:
+#   name: binary name on disk
+#   url:  download URL
+# For archive downloads, also set:
+#   archive_binary: filename of the binary inside the archive
+
+cli_tools:
+  - name: docker-compose
+    url: "https://github.com/docker/compose/releases/download/v5.1.0/docker-compose-linux-x86_64"
+
+  - name: infisical
+    url: "https://github.com/Infisical/cli/releases/download/v0.43.72/cli_0.43.72_linux_amd64.tar.gz"
+    archive_binary: infisical

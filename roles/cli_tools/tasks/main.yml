@@ -1,0 +1,30 @@
+---
+# Install CLI tools into ~/.local/bin.
+# Direct binaries are downloaded straight; archives are extracted first.
+
+- name: Install direct CLI binaries
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ local_bin }}/{{ item.name }}"
+    mode: "0755"
+    force: true
+  loop: "{{ cli_tools | rejectattr('archive_binary', 'defined') | list }}"
+  tags: cli_tools
+
+- name: Download archive CLI tools
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "/tmp/{{ item.name }}.tar.gz"
+    mode: "0644"
+    force: true
+  loop: "{{ cli_tools | selectattr('archive_binary', 'defined') | list }}"
+  tags: cli_tools
+
+- name: Extract and install archive CLI tools
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ item.name }}.tar.gz"
+    dest: "{{ local_bin }}"
+    include: ["{{ item.archive_binary }}"]
+    remote_src: true
+  loop: "{{ cli_tools | selectattr('archive_binary', 'defined') | list }}"
+  tags: cli_tools

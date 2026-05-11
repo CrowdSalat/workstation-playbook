@@ -1,3 +1,0 @@
----
-compose_version: "5.1.0"
-compose_url: "https://github.com/docker/compose/releases/download/v{{ compose_version }}/docker-compose-linux-x86_64"

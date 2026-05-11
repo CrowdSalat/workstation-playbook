@@ -22,5 +22,5 @@
     - { role: gnome_shell_extensions, tags: [gnome_shell_extensions] }
     - { role: vscodium_config, tags: [vscodium_config] }
     - { role: cursor, tags: [cursor] }
-    - { role: compose, tags: [compose] }
+    - { role: cli_tools, tags: [cli_tools] }
     - { role: git, tags: [git] }
