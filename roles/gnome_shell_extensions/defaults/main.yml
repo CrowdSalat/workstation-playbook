@@ -1,3 +1,6 @@
 ---
-# Reserved for future: pin UUIDs and merge org.gnome.shell enabled-extensions
-# (see docs/gnome-extensions.md). Empty for now — use Extension Manager in the GUI.
+# GNOME Shell extension UUIDs to install from extensions.gnome.org.
+# The correct version for the running GNOME Shell is selected automatically.
+gnome_shell_extension_uuids:
+  - "dash-to-panel@jderose9.github.com"
+  - "gsconnect@andyholmes.github.io"

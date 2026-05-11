@@ -144,14 +144,26 @@ Downloads the Cursor AppImage into `~/Applications`, makes it executable, and ad
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags cursor
 ```
 
-### compose
+### cli_tools
 
-Downloads the standalone **docker-compose** binary to `~/.local/bin` for use as a Podman Compose backend.
+Installs CLI tools into `~/.local/bin`. Each entry in `cli_tools` (`roles/cli_tools/defaults/main.yml`) is either a direct binary download or a `.tar.gz` archive:
 
-**Tag:** `compose`
+```yaml
+cli_tools:
+  # Direct binary — downloaded straight to ~/.local/bin/<name>
+  - name: docker-compose
+    url: "https://github.com/docker/compose/releases/download/v5.1.0/docker-compose-linux-x86_64"
+
+  # Archive — downloaded, extracted, binary copied to ~/.local/bin/<name>
+  - name: infisical
+    url: "https://github.com/Infisical/cli/releases/download/v0.43.72/cli_0.43.72_linux_amd64.tar.gz"
+    archive_binary: infisical   # filename inside the archive
+```
+
+**Tag:** `cli_tools`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags compose
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags cli_tools
 ```
 
 ### git

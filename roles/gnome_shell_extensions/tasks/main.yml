@@ -1,8 +1,51 @@
 ---
-# Install and enable specific extensions via Ansible is deferred (Shell version / UUID pins).
-# Use Extension Manager (installed by the flatpaks role) to browse and enable extensions.
 - name: Ensure GNOME Shell user extension directory exists
   ansible.builtin.file:
     path: "{{ ansible_facts['env']['HOME'] }}/.local/share/gnome-shell/extensions"
     state: directory
     mode: "0755"
+  tags: gnome_shell_extensions
+
+- name: Get GNOME Shell version
+  ansible.builtin.command: gnome-shell --version
+  register: gnome_shell_version_output
+  changed_when: false
+  tags: gnome_shell_extensions
+
+- name: Set GNOME Shell major version
+  ansible.builtin.set_fact:
+    gnome_shell_major: "{{ gnome_shell_version_output.stdout | regex_search('([0-9]+)', '\\1') | first }}"
+  tags: gnome_shell_extensions
+
+- name: Download GNOME Shell extensions
+  ansible.builtin.get_url:
+    url: "https://extensions.gnome.org/download-extension/{{ item }}.shell-extension.zip?shell_version={{ gnome_shell_major }}"
+    dest: "/tmp/{{ item }}.zip"
+    mode: "0644"
+    force: false
+  loop: "{{ gnome_shell_extension_uuids }}"
+  tags: gnome_shell_extensions
+
+- name: Create extension directories
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.local/share/gnome-shell/extensions/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ gnome_shell_extension_uuids }}"
+  tags: gnome_shell_extensions
+
+- name: Extract GNOME Shell extensions
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ item }}.zip"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.local/share/gnome-shell/extensions/{{ item }}"
+    remote_src: true
+  loop: "{{ gnome_shell_extension_uuids }}"
+  tags: gnome_shell_extensions
+
+- name: Enable GNOME Shell extensions
+  ansible.builtin.command: gnome-extensions enable {{ item }}
+  loop: "{{ gnome_shell_extension_uuids }}"
+  register: enable_result
+  changed_when: enable_result.rc == 0
+  failed_when: false
+  tags: gnome_shell_extensions
