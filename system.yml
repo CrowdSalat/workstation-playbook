@@ -1,0 +1,18 @@
+---
+# System-level setup: COPR repos + rpm-ostree package layering.
+# Requires sudo: run with -K and only when adding/changing system packages.
+# Run: ansible-playbook -i inventory/hosts.yml system.yml -K
+# A reboot is required after changes are staged by rpm-ostree.
+
+- name: Fedora Silverblue workstation (system)
+  hosts: localhost
+  become: true
+  vars_files:
+    - vars/main.yml
+  pre_tasks:
+    - name: Load local vars if present
+      ansible.builtin.include_vars: vars/local.yml
+      ignore_errors: true
+      tags: always
+  roles:
+    - { role: rpm_ostree, tags: [rpm_ostree] }

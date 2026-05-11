@@ -1,10 +1,10 @@
 ---
-# Fedora Silverblue workstation setup
-# Prefer Flatpaks for GUI (per-user), ~/.local for CLI binaries. No sudo for flatpaks.
-# Run: ansible-playbook -i inventory/hosts.yml playbook.yml
+# Fedora Silverblue workstation setup — user-level, no sudo required.
+# Run: ansible-playbook -i inventory/hosts.yml user.yml
 # Personal vars (name, email, signing key): copy vars/local.yml.example to vars/local.yml
+# For system packages (rpm-ostree / COPR): use system.yml instead.
 
-- name: Fedora Silverblue workstation
+- name: Fedora Silverblue workstation (user)
   hosts: localhost
   vars_files:
     - vars/main.yml

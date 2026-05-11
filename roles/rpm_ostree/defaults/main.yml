@@ -1,0 +1,8 @@
+---
+# Packages layered into the base OS image via rpm-ostree.
+# Requires a reboot to take effect (handled outside Ansible).
+# COPR repos are enabled automatically when a package lists one.
+
+rpm_ostree_packages:
+  - name: ghostty
+    copr: alternateved/ghostty

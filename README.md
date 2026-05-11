@@ -1,6 +1,6 @@
 # Fedora Silverblue workstation playbook
 
-Automates user-level setup on Fedora Silverblue: **per-user** Flatpaks (under `~/.local/share/flatpak`, no sudo), CLI tools under `~/.local/bin`, and shell/editor configuration. Run Ansible **on the host**, not inside Toolbox—Flatpak tasks need the host’s `flatpak` and daemon.
+Automates setup on Fedora Silverblue: **per-user** Flatpaks (under `~/.local/share/flatpak`, no sudo), CLI tools under `~/.local/bin`, shell/editor configuration, and optionally system packages via `rpm-ostree`. Run Ansible **on the host**, not inside Toolbox — Flatpak and rpm-ostree tasks need the host daemon.
 
 ---
 
@@ -22,21 +22,49 @@ python3 -m venv .venv/ansible
 .venv/ansible/bin/ansible-galaxy collection install community.general
 ```
 
-Use the venv’s `ansible-playbook` (path below) so you do not rely on a system-wide Ansible install.
+Use the venv's `ansible-playbook` (path below) so you do not rely on a system-wide Ansible install.
 
 Optional: `source .venv/ansible/bin/activate` and then call `ansible-playbook` without the full path.
 
 ---
 
-## What each role does
+## Personal vars (git identity, SSH signing key)
 
-Use `inventory/hosts.yml` and `playbook.yml` from this repo. Pass `**--tags tag1,tag2**` (comma-separated, no spaces) to run only those roles. The included roles do **not** require sudo.
-
-**Run all roles:**
+Copy the example file and fill it in — it is git-ignored and never committed:
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml
+cp vars/local.yml.example vars/local.yml
+# edit vars/local.yml with your name, email, and signing key path
 ```
+
+---
+
+## Running the playbook
+
+There are two playbooks:
+
+| Playbook | sudo? | When to use |
+|---|---|---|
+| `user.yml` | **Never** | Everyday / routine — all user-level roles |
+| `system.yml` | **Yes (`-K`)** | Adding/changing system packages (rpm-ostree + COPR) |
+
+**Run all user-level roles:**
+
+```bash
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml
+```
+
+**Run system-level roles** (COPR repos + rpm-ostree, requires reboot after):
+
+```bash
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml system.yml -K
+```
+
+Pass `**--tags tag1,tag2**` (comma-separated, no spaces) to run only specific roles.
+
+---
+
+## What each role does
 
 ### bootstrap
 
@@ -45,7 +73,7 @@ Creates common directories: `~/.local/bin`, `~/.local/share/applications`, and `
 **Tag:** `bootstrap`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags bootstrap
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags bootstrap
 ```
 
 ### starship
@@ -55,12 +83,12 @@ Downloads the Starship binary into `~/.local/bin` and adds its init block to `~/
 **Tag:** `starship`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags starships
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags starship
 ```
 
 ### flatpaks
 
-Ensures the **Flathub** remote exists for **your user** (`flatpak remote-add --user`), then installs or removes Flatpaks with `**--user`** under `~/.local/share/flatpak` (no sudo).
+Ensures the **Flathub** remote exists for **your user** (`flatpak remote-add --user`), then installs or removes Flatpaks with `--user` under `~/.local/share/flatpak` (no sudo).
 
 Variables in `roles/flatpaks/defaults/main.yml`:
 
@@ -68,16 +96,16 @@ Variables in `roles/flatpaks/defaults/main.yml`:
 
 Install and remove are **separate tags** inside the role (the flatpaks role is not tagged at play level, so `--tags flatpaks_remove` does not run install tasks):
 
-**Tag:** `flatpaks` — install everything listed in `**flatpak_packages`**
+**Tag:** `flatpaks` — install everything listed in `flatpak_packages`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags flatpaks
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags flatpaks
 ```
 
-**Tag:** `flatpaks_remove` — remove everything listed in `**flatpak_packages`**
+**Tag:** `flatpaks_remove` — remove everything listed in `flatpak_packages`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags flatpaks_remove
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags flatpaks_remove
 ```
 
 ### gnome_shell_extensions
@@ -87,7 +115,7 @@ Ensures `~/.local/share/gnome-shell/extensions` exists for per-user extensions. 
 **Tag:** `gnome_shell_extensions`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags gnome_shell_extensions
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags gnome_shell_extensions
 ```
 
 ### vscodium_config
@@ -98,12 +126,12 @@ Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` int
 
 - **Plain string** — `publisher.extension` via Open VSX / Codium default registry (`--install-extension`).
 - **`url: https://…/file.vsix`** — download VSIX, then install from disk (cache: **`vscodium_vsix_cache_dir`**).
-- **`marketplace:`** — `publisher`, `extension` (short id), `version` (from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/) version you want); downloads the official gallery VSIX then installs it (same as [Certificate Viewer](https://marketplace.visualstudio.com/items?itemName=TimHeuer.pfx-view) style packages).
+- **`marketplace:`** — `publisher`, `extension` (short id), `version` (from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/)); downloads the official gallery VSIX then installs it.
 
 **Tag:** `vscodium_config`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags vscodium_config
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags vscodium_config
 ```
 
 ### cursor
@@ -113,7 +141,7 @@ Downloads the Cursor AppImage into `~/Applications`, makes it executable, and ad
 **Tag:** `cursor`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags cursor
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags cursor
 ```
 
 ### compose
@@ -123,27 +151,39 @@ Downloads the standalone **docker-compose** binary to `~/.local/bin` for use as 
 **Tag:** `compose`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags compose
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags compose
 ```
 
 ### git
 
-Sets global `user.name` and `user.email`, and turns on **SSH** commit signing (`gpg.format` ssh and `user.signingkey`).
+Sets global `user.name`, `user.email`, and **SSH commit signing** (`gpg.format ssh` + `user.signingkey`). Values come from `vars/local.yml` (git-ignored); see `vars/local.yml.example` for the keys to set.
 
 **Tag:** `git`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml --tags git
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags git
 ```
 
-**Set identity** (with full playbook or with `--tags git`):
+### rpm_ostree *(system.yml only)*
+
+Enables COPR repositories and layers packages into the Silverblue base image via `rpm-ostree`. **Requires sudo (`-K`) and a reboot to take effect.**
+
+Variables in `roles/rpm_ostree/defaults/main.yml`:
+
+- `**rpm_ostree_packages**` — list of `{ name, copr }` maps (omit `copr` if the package is in the default Fedora repos).
+
+**Tag:** `rpm_ostree`
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml playbook.yml \
-  -e "git_user_name=Your Name" \
-  -e "git_user_email=you@example.com"
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml system.yml -K --tags rpm_ostree
+```
+
+After the run, reboot to apply staged changes:
+
+```bash
+systemctl reboot
 ```
 
 ---
 
-Shared paths and version pins live in `vars/main.yml` and in each role’s `defaults/main.yml` where applicable.
+Shared paths and version pins live in `vars/main.yml` and in each role's `defaults/main.yml` where applicable.
