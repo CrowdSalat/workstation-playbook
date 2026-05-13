@@ -2,7 +2,12 @@
 # DNF packages installed inside the toolbox.
 toolbox_dnf_packages:
   - nodejs
+  - python3-pip
 
 # npm packages installed globally inside the toolbox (requires sudo).
 toolbox_npm_packages:
   - "@earendil-works/pi-coding-agent"
+
+# pip packages installed for the user inside the toolbox.
+toolbox_pip_packages:
+  - esptool

@@ -39,3 +39,23 @@
   changed_when: true
   tags: toolbox
 
+# pip show exits 0 when the package is present, non-zero when absent.
+- name: Check pip packages in toolbox
+  ansible.builtin.command: >
+    toolbox run --container {{ toolbox_name }}
+    pip show {{ item }}
+  loop: "{{ toolbox_pip_packages }}"
+  register: pip_check
+  changed_when: false
+  failed_when: false
+  tags: toolbox
+
+- name: Install missing pip packages for user in toolbox
+  ansible.builtin.command: >
+    toolbox run --container {{ toolbox_name }}
+    pip install --user {{ item.item }}
+  loop: "{{ pip_check.results }}"
+  when: item.rc != 0
+  changed_when: true
+  tags: toolbox
+
