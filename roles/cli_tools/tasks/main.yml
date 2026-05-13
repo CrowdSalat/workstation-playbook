@@ -24,7 +24,8 @@
   ansible.builtin.unarchive:
     src: "/tmp/{{ item.name }}.tar.gz"
     dest: "{{ local_bin }}"
-    include: ["{{ item.archive_binary }}"]
+    include: ["{{ (item.archive_subdir ~ '/') if item.archive_subdir is defined else '' }}{{ item.archive_binary }}"]
+    extra_opts: "{{ ['--strip-components=1'] if item.archive_subdir is defined else [] }}"
     remote_src: true
   loop: "{{ cli_tools | selectattr('archive_binary', 'defined') | list }}"
   tags: cli_tools
