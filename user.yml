@@ -15,6 +15,7 @@
       tags: always
   roles:
     - { role: bootstrap, tags: [bootstrap] }
+    - { role: ssh_agent, tags: [ssh_agent] }
     - { role: starship, tags: [starship] }
     # Do not tag the role here: both tags on the role apply to every task, so
     # --tags flatpaks_remove would also run install. Tags live on import_tasks in the role.

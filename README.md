@@ -76,6 +76,20 @@ Creates common directories: `~/.local/bin`, `~/.local/share/applications`, and `
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags bootstrap
 ```
 
+### ssh_agent
+
+**SSH behavior:** In a normal GNOME session, **`SSH_AUTH_SOCK`** is usually already set (desktop **keyring / gcr** agent). The playbook **does not replace** that: interactive bash only runs **keychain** when no usable socket exists (SSH login, many toolboxes, tty).
+
+**Keychain** is installed as a script under **`~/.local/bin/keychain`** (pinned release, no `rpm-ostree`). Default identities are **`id_ed25519`** names under `~/.ssh/` — override in `vars/local.yml` with `ssh_agent_identities` if needed.
+
+Optionally adds a small **`Host *`** block to **`~/.ssh/config`** (`AddKeysToAgent`, `IdentitiesOnly`). Turn that off with `ssh_agent_manage_ssh_config: false`. Disable the whole role with `ssh_agent_enabled: false`.
+
+**Tag:** `ssh_agent`
+
+```bash
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags ssh_agent
+```
+
 ### starship
 
 Downloads the Starship binary into `~/.local/bin` and adds its init block to `~/.bashrc`.
