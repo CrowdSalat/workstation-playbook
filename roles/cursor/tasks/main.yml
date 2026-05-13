@@ -1,15 +1,16 @@
 ---
+- name: Fetch Cursor download metadata
+  ansible.builtin.uri:
+    url: "{{ cursor_appimage_url }}"
+    return_content: true
+  register: cursor_download_info
+
 - name: Download Cursor AppImage (x86_64)
   ansible.builtin.get_url:
-    url: "{{ cursor_appimage_url }}"
-    dest: "{{ applications_dir }}/cursor.appimage"
+    url: "{{ (cursor_download_info.content | from_json).downloadUrl }}"
+    dest: "{{ applications_dir }}/cursor.AppImage"
     mode: "0755"
     force: true
-
-- name: Make Cursor AppImage executable
-  ansible.builtin.file:
-    path: "{{ applications_dir }}/cursor.appimage"
-    mode: "0755"
 
 - name: Cursor .desktop launcher
   ansible.builtin.copy:
@@ -18,7 +19,7 @@
       [Desktop Entry]
       Name=Cursor
       Comment=AI-powered IDE
-      Exec={{ applications_dir }}/cursor.appimage %F
+      Exec={{ applications_dir }}/cursor.AppImage %F
       Icon=cursor
       Type=Application
       Categories=Development;IDE;TextEditor;
