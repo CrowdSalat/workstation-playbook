@@ -24,3 +24,4 @@
     - { role: cursor, tags: [cursor] }
     - { role: cli_tools, tags: [cli_tools] }
     - { role: git, tags: [git] }
+    - { role: toolbox, tags: [toolbox] }

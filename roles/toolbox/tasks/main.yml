@@ -1,0 +1,30 @@
+---
+# Ensure the named toolbox exists.
+- name: Check existing toolboxes
+  ansible.builtin.command: toolbox list --containers
+  register: toolbox_list
+  changed_when: false
+  tags: toolbox
+
+- name: Create toolbox
+  ansible.builtin.command: toolbox create --container {{ toolbox_name }}
+  when: toolbox_name not in toolbox_list.stdout
+  tags: toolbox
+
+- name: Install dnf packages in toolbox
+  ansible.builtin.command: >
+    toolbox run --container {{ toolbox_name }}
+    sudo dnf install -y {{ toolbox_dnf_packages | join(' ') }}
+  register: dnf_result
+  changed_when: "'Nothing to do.' not in dnf_result.stdout"
+  tags: toolbox
+
+- name: Install npm packages globally in toolbox
+  ansible.builtin.command: >
+    toolbox run --container {{ toolbox_name }}
+    sudo npm install -g {{ item }}
+  loop: "{{ toolbox_npm_packages }}"
+  register: npm_result
+  changed_when: "'up to date' not in npm_result.stdout"
+  tags: toolbox
+
