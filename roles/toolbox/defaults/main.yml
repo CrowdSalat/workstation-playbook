@@ -9,5 +9,4 @@ toolbox_npm_packages:
   - "@earendil-works/pi-coding-agent"
 
 # pip packages installed for the user inside the toolbox.
-toolbox_pip_packages:
-  - esptool
+toolbox_pip_packages: []
