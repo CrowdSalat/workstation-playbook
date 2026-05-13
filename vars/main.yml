@@ -2,6 +2,7 @@
 # Paths (user-level, shared with toolboxes)
 # Used by roles that need these; role defaults can override version-specific vars
 local_bin: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
+toolbox_name: "fedora-toolbox-41"
 local_share_apps: "{{ ansible_facts['env']['HOME'] }}/.local/share/applications"
 applications_dir: "{{ ansible_facts['env']['HOME'] }}/Applications"
 bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"

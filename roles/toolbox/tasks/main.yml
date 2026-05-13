@@ -19,12 +19,23 @@
   changed_when: "'Nothing to do.' not in dnf_result.stdout"
   tags: toolbox
 
-- name: Install npm packages globally in toolbox
+# npm list -g exits 0 when the package is present, non-zero when absent.
+- name: Check npm packages in toolbox
   ansible.builtin.command: >
     toolbox run --container {{ toolbox_name }}
-    sudo npm install -g {{ item }}
+    npm list -g --depth=0 {{ item }}
   loop: "{{ toolbox_npm_packages }}"
-  register: npm_result
-  changed_when: "'up to date' not in npm_result.stdout"
+  register: npm_check
+  changed_when: false
+  failed_when: false
+  tags: toolbox
+
+- name: Install missing npm packages globally in toolbox
+  ansible.builtin.command: >
+    toolbox run --container {{ toolbox_name }}
+    sudo npm install -g {{ item.item }}
+  loop: "{{ npm_check.results }}"
+  when: item.rc != 0
+  changed_when: true
   tags: toolbox
 
