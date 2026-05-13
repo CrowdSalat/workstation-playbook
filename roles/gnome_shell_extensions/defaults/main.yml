@@ -2,5 +2,7 @@
 # GNOME Shell extension UUIDs to install from extensions.gnome.org.
 # The correct version for the running GNOME Shell is selected automatically.
 gnome_shell_extension_uuids:
-  - "dash-to-panel@jderose9.github.com"
+  # UUID from extensions.gnome.org (dash-to-dock@micxgx.gnome.github.com 404s).
+  - "dash-to-dock@micxgx.gmail.com"
   - "gsconnect@andyholmes.github.io"
+  - "Vitals@CoreCoding.com"
