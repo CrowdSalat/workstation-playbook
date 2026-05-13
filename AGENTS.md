@@ -19,13 +19,12 @@ When adding or editing tasks in this repository:
 
 ## Git commits
 
-When writing commit messages (including suggested messages in chat), follow this strictly:
+When writing commit messages (including suggested messages in chat):
 
-- **Subject line only** — a single line; do not add a body or extra paragraphs unless the user explicitly asks for a longer message.
-- **No footer block** — do not append trailers, `Signed-off-by:`, `Co-authored-by:`, `Reviewed-by:`, or any signature-style lines after the subject.
-- **Subject rules** — imperative mood (e.g. "Add…", "Fix…"), at most 72 characters, no trailing period.
+- **[Conventional Commits](https://www.conventionalcommits.org/)** — use `type(optional scope): summary`. Pick a fitting `type` (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, etc.); add a short `scope` when it clarifies the area (role name, component).
+- **Subject** — imperative after the colon; the header line is at most **72 characters** total (including `type(scope): `), no trailing period.
+- **Body** — optional. Add a blank line and a short body only when it helps (e.g. why, migration hint). Keep it tight; avoid long bodies that restate the diff.
+- **Footers** — none, except a **`BREAKING CHANGE:`** footer when documenting a breaking change, as Conventional Commits allows. Mark breaking commits with `!` on the type or scope when that is enough (`feat!:`, `feat(scope)!:`).
 - **One logical change per commit** — do not mix unrelated topics; avoid splitting one logical change into many tiny commits.
 
-Examples of acceptable subjects: `Add teddycloud OCP entrypoint and Dockerfile`, `Fix metallb BGP peer configuration`.
-
-Do not propose or use multi-line commit templates with a blank line and body, and do not "helpfully" add footers every time.
+Examples: `feat(teddycloud): add OCP entrypoint and Dockerfile`, `fix(metallb): correct BGP peer configuration`.
