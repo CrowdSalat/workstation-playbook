@@ -180,6 +180,23 @@ cli_tools:
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags cli_tools
 ```
 
+### toolbox
+
+Ensures the toolbox container exists (creates it if missing) and installs packages inside it.
+
+Variables in `roles/toolbox/defaults/main.yml`:
+
+- **`toolbox_dnf_packages`** — DNF packages installed inside the toolbox (e.g. `nodejs`, `zip`).
+- **`toolbox_npm_packages`** — npm packages installed globally inside the toolbox (`sudo npm install -g`).
+- **`toolbox_pip_packages`** — pip packages installed for the user inside the toolbox (`pip install --user`).
+- **`toolbox_sdkman_candidates`** — [SDKMAN](https://sdkman.io) candidates installed for the user (e.g. `kotlin`, `quarkus`). SDKMAN itself is installed automatically on first run; its init is added to `~/.bashrc`.
+
+**Tag:** `toolbox`
+
+```bash
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags toolbox
+```
+
 ### git
 
 Sets global `user.name`, `user.email`, and **SSH commit signing** (`gpg.format ssh` + `user.signingkey`). Values come from `vars/local.yml` (git-ignored); see `vars/local.yml.example` for the keys to set.

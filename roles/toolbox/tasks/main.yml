@@ -59,3 +59,43 @@
   changed_when: true
   tags: toolbox
 
+# SDKMAN is installed to ~/.sdkman (shared home, so the stat runs on the host).
+- name: Check if SDKMAN is installed
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.sdkman/bin/sdkman-init.sh"
+  register: sdkman_init
+  tags: toolbox
+
+- name: Install SDKMAN in toolbox
+  ansible.builtin.command: >
+    toolbox run --container {{ toolbox_name }}
+    bash -c 'curl -s "https://get.sdkman.io" | bash'
+  when: not sdkman_init.stat.exists
+  changed_when: true
+  tags: toolbox
+
+- name: Add SDKMAN init to ~/.bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK sdkman"
+    block: |
+      export SDKMAN_DIR="$HOME/.sdkman"
+      [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+  tags: toolbox
+
+# Check candidate presence via the shared home directory; no need to enter the toolbox.
+- name: Check installed SDKMAN candidates
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.sdkman/candidates/{{ item }}/current"
+  loop: "{{ toolbox_sdkman_candidates }}"
+  register: sdkman_candidates
+  tags: toolbox
+
+- name: Install missing SDKMAN candidates in toolbox
+  ansible.builtin.command: >
+    toolbox run --container {{ toolbox_name }}
+    bash -c 'source ~/.sdkman/bin/sdkman-init.sh && sdk install {{ item.item }}'
+  loop: "{{ sdkman_candidates.results }}"
+  when: not item.stat.exists
+  changed_when: true
+  tags: toolbox

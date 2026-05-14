@@ -3,6 +3,8 @@
 toolbox_dnf_packages:
   - nodejs
   - python3-pip
+  - zip
+  - unzip
 
 # npm packages installed globally inside the toolbox (requires sudo).
 toolbox_npm_packages:
@@ -10,3 +12,10 @@ toolbox_npm_packages:
 
 # pip packages installed for the user inside the toolbox.
 toolbox_pip_packages: []
+
+# SDKMAN candidates installed for the user inside the toolbox.
+toolbox_sdkman_candidates:
+  - java
+  - maven
+  - kotlin
+  - quarkus
