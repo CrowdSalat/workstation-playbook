@@ -25,6 +25,6 @@
     path: "{{ bashrc }}"
     marker: "# {mark} ANSIBLE MANAGED - Starship"
     block: |
-      eval "$({{ local_bin }}/starship init bash)"
+      [[ "$TERM" != "dumb" ]] && eval "$({{ local_bin }}/starship init bash)"
     create: true
     insertafter: EOF
