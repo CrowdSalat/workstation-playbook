@@ -24,6 +24,7 @@ vscodium_terminal_json: |
 # Requires VSCodium Flatpak (flatpaks role). Marketplace/URL steps need network.
 vscodium_extensions:
   - stuart.unique-window-colors
+  - fwcd.kotlin
   - marketplace:
       publisher: TimHeuer
       extension: pfx-view
