@@ -223,6 +223,21 @@ Sets global `user.name`, `user.email`, and **SSH commit signing** (`gpg.format s
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags git
 ```
 
+### tool_configs
+
+Creates config files for common developer tools:
+
+- **`~/.testcontainers.properties`** — points Testcontainers at the rootless Podman socket and disables Ryuk.
+- **`~/.redhat/io.quarkus.analytics.localconfig`** — opts out of Quarkus build analytics.
+
+**Tag:** `tool_configs`
+
+```bash
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags tool_configs
+```
+
+---
+
 ### rpm_ostree *(system.yml only)*
 
 Enables COPR repositories and layers packages into the Silverblue base image via `rpm-ostree`. **Requires sudo (`-K`) and a reboot to take effect.**

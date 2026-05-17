@@ -27,3 +27,4 @@
     - { role: cli_tools, tags: [cli_tools] }
     - { role: git, tags: [git] }
     - { role: toolbox, tags: [toolbox] }
+    - { role: tool_configs, tags: [tool_configs] }
