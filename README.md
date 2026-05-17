@@ -132,6 +132,22 @@ Ensures `~/.local/share/gnome-shell/extensions` exists for per-user extensions. 
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags gnome_shell_extensions
 ```
 
+### gnome_settings
+
+Applies GNOME desktop settings via `gsettings`. Idempotent: reads the current value before writing.
+
+Default tweaks (`roles/gnome_settings/defaults/main.yml`):
+
+- **Alt+Tab switches windows** (not applications) — clears `switch-applications`, sets `switch-windows` to `<Alt>Tab` and `switch-windows-backward` to `<Shift><Alt>Tab`.
+
+Additional entries can be added to `gnome_keybindings` (or any other `gnome_settings` variable list in a future extension) by overriding the defaults.
+
+**Tag:** `gnome_settings`
+
+```bash
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags gnome_settings
+```
+
 ### vscodium_config
 
 Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox), installs extensions from **`vscodium_extensions`** (`roles/vscodium_config/defaults/main.yml`, needs network for remote VSIX), and adds `code` / `codium` shell functions (forward arguments to Flatpak) with **`blockinfile`**. It does **not** install the VSCodium Flatpak; the **flatpaks** role does.

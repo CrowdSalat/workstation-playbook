@@ -1,0 +1,17 @@
+---
+- name: Apply GNOME keybindings via gsettings
+  ansible.builtin.shell:
+    cmd: |
+      current=$(gsettings get {{ item.schema }} {{ item.key }} 2>/dev/null)
+      if [ "$current" != "$DESIRED" ]; then
+        gsettings set {{ item.schema }} {{ item.key }} "$DESIRED"
+        echo CHANGED
+      fi
+  environment:
+    DESIRED: "{{ item.value }}"
+  register: gsettings_result
+  changed_when: "'CHANGED' in gsettings_result.stdout"
+  loop: "{{ gnome_keybindings }}"
+  loop_control:
+    label: "{{ item.schema }} {{ item.key }}"
+  tags: gnome_settings
