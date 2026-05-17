@@ -11,6 +11,12 @@
     value: "{{ git_user_email }}"
     scope: global
 
+- name: Set default branch name for new repositories
+  ansible.builtin.git_config:
+    name: init.defaultBranch
+    value: "main"
+    scope: global
+
 - name: Enable SSH signing for commits
   ansible.builtin.git_config:
     name: "{{ item.name }}"
