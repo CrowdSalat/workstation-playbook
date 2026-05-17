@@ -6,3 +6,7 @@ toolbox_name: "fedora-toolbox-43"
 local_share_apps: "{{ ansible_facts['env']['HOME'] }}/.local/share/applications"
 applications_dir: "{{ ansible_facts['env']['HOME'] }}/Applications"
 bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+
+# Git identity (non-secret; signing key stays in vars/local.yml)
+git_user_name: "CrowdSalat"
+git_user_email: "15823789+CrowdSalat@users.noreply.github.com"
