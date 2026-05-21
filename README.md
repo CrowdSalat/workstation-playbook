@@ -1,16 +1,24 @@
 # Fedora Silverblue workstation playbook
 
-Automates setup on Fedora Silverblue: **per-user** Flatpaks (under `~/.local/share/flatpak`, no sudo), CLI tools under `~/.local/bin`, shell/editor configuration, and optionally system packages via `rpm-ostree`. Run Ansible **on the host**, not inside Toolbox — Flatpak and rpm-ostree tasks need the host daemon.
+Automates setup on Fedora Silverblue: per-user Flatpaks (under `~/.local/share/flatpak`, no sudo), CLI tools under `~/.local/bin`, shell/editor configuration, and optionally system packages via `rpm-ostree`.
 
----
+Run Ansible on the host, not inside Toolbox. Flatpak and `rpm-ostree` tasks need host services.
+
+## Quickstart
+
+```bash
+python3 -m venv .venv/ansible
+.venv/ansible/bin/pip install ansible
+.venv/ansible/bin/ansible-galaxy collection install community.general
+cp vars/local.yml.example vars/local.yml
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml
+```
 
 ## Prerequisites on the host
 
-- **Python 3** (to create the venv)
-- `**jq`** — used when merging VSCodium `settings.json` (`dnf`/`rpm-ostree` in toolbox, or host if you layer it)
-- `**community.general**` — Ansible collection for the Flatpak modules
-
----
+- `python3` (to create the venv)
+- `jq` (used when merging VSCodium `settings.json`)
+- Ansible collection `community.general` (Flatpak modules)
 
 ## Install Ansible in a project venv
 
@@ -22,242 +30,68 @@ python3 -m venv .venv/ansible
 .venv/ansible/bin/ansible-galaxy collection install community.general
 ```
 
-Use the venv's `ansible-playbook` (path below) so you do not rely on a system-wide Ansible install.
+Use the venv's `ansible-playbook` path so you do not rely on system-wide Ansible.
 
-Optional: `source .venv/ansible/bin/activate` and then call `ansible-playbook` without the full path.
+Optional:
 
----
+```bash
+source .venv/ansible/bin/activate
+```
 
 ## Personal vars (git identity, SSH signing key)
 
-Copy the example file and fill it in — it is git-ignored and never committed:
+Copy the example file and fill it in. It is git-ignored and should never be committed.
 
 ```bash
 cp vars/local.yml.example vars/local.yml
 # edit vars/local.yml with your name, email, and signing key path
 ```
 
----
-
-## Running the playbook
+## Running playbooks
 
 There are two playbooks:
 
 | Playbook | sudo? | When to use |
 |---|---|---|
-| `user.yml` | **Never** | Everyday / routine — all user-level roles |
-| `system.yml` | **Yes (`-K`)** | Adding/changing system packages (rpm-ostree + COPR) |
+| `user.yml` | No | Everyday routine for user-level roles |
+| `system.yml` | Yes (`-K`) | System package layering (`rpm-ostree` + COPR) |
 
-**Run all user-level roles:**
+Run all user-level roles:
 
 ```bash
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml
 ```
 
-**Run system-level roles** (COPR repos + rpm-ostree, requires reboot after):
+Run system-level roles (requires reboot afterward):
 
 ```bash
 .venv/ansible/bin/ansible-playbook -i inventory/hosts.yml system.yml -K
 ```
 
-Pass `**--tags tag1,tag2**` (comma-separated, no spaces) to run only specific roles.
-
----
-
-## What each role does
-
-### bootstrap
-
-Creates common directories: `~/.local/bin`, `~/.local/share/applications`, and `~/Applications`.
-
-**Tag:** `bootstrap`
+Run specific roles by tag:
 
 ```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags bootstrap
+.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags tag1,tag2
 ```
 
-### ssh_agent
-
-**SSH behavior:** In a normal GNOME session, **`SSH_AUTH_SOCK`** is usually already set (desktop **keyring / gcr** agent). The playbook **does not replace** that: interactive bash only runs **keychain** when no usable socket exists (SSH login, many toolboxes, tty).
-
-**Keychain** is installed as a script under **`~/.local/bin/keychain`** (pinned release, no `rpm-ostree`). Default identities are **`id_ed25519`** names under `~/.ssh/` — override in `vars/local.yml` with `ssh_agent_identities` if needed.
-
-Optionally adds a small **`Host *`** block to **`~/.ssh/config`** (`AddKeysToAgent`, `IdentitiesOnly`). Turn that off with `ssh_agent_manage_ssh_config: false`. Disable the whole role with `ssh_agent_enabled: false`.
-
-**Tag:** `ssh_agent`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags ssh_agent
-```
-
-### starship
-
-Downloads the Starship binary into `~/.local/bin` and adds its init block to `~/.bashrc`.
-
-**Tag:** `starship`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags starship
-```
-
-### flatpaks
-
-Ensures the **Flathub** remote exists for **your user** (`flatpak remote-add --user`), then installs or removes Flatpaks with `--user` under `~/.local/share/flatpak` (no sudo).
-
-Variables in `roles/flatpaks/defaults/main.yml`:
-
-- `**flatpak_packages**` — list of Flatpak **app IDs** to install or uninstall (strings, e.g. `com.vscodium.codium`).
-
-Install and remove are **separate tags** inside the role (the flatpaks role is not tagged at play level, so `--tags flatpaks_remove` does not run install tasks):
-
-**Tag:** `flatpaks` — install everything listed in `flatpak_packages`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags flatpaks
-```
-
-**Tag:** `flatpaks_remove` — remove everything listed in `flatpak_packages`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags flatpaks_remove
-```
-
-### gnome_shell_extensions
-
-Ensures `~/.local/share/gnome-shell/extensions` exists for per-user extensions. Installing or enabling specific extensions is left to Extension Manager (from **flatpaks**) or future automation.
-
-**Tag:** `gnome_shell_extensions`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags gnome_shell_extensions
-```
-
-### gnome_settings
-
-Applies GNOME desktop settings via `gsettings`. Idempotent: reads the current value before writing.
-
-Default tweaks (`roles/gnome_settings/defaults/main.yml`):
-
-- **Alt+Tab switches windows** (not applications) — clears `switch-applications`, sets `switch-windows` to `<Alt>Tab` and `switch-windows-backward` to `<Shift><Alt>Tab`.
-
-Additional entries can be added to `gnome_keybindings` (or any other `gnome_settings` variable list in a future extension) by overriding the defaults.
-
-**Tag:** `gnome_settings`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags gnome_settings
-```
-
-### vscodium_config
-
-Configures VSCodium `settings.json` (integrated terminal via `flatpak-spawn` into your toolbox), installs extensions from **`vscodium_extensions`** (`roles/vscodium_config/defaults/main.yml`, needs network for remote VSIX), and adds `code` / `codium` shell functions (forward arguments to Flatpak) with **`blockinfile`**. It does **not** install the VSCodium Flatpak; the **flatpaks** role does.
-
-**`vscodium_extensions`** entries can be:
-
-- **Plain string** — `publisher.extension` via Open VSX / Codium default registry (`--install-extension`).
-- **`url: https://…/file.vsix`** — download VSIX, then install from disk (cache: **`vscodium_vsix_cache_dir`**).
-- **`marketplace:`** — `publisher`, `extension` (short id), `version` (from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/)); downloads the official gallery VSIX then installs it.
-
-**Tag:** `vscodium_config`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags vscodium_config
-```
-
-### cursor
-
-Downloads the Cursor AppImage into `~/Applications`, makes it executable, and adds a `.desktop` file under `~/.local/share/applications`.
-
-**Tag:** `cursor`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags cursor
-```
-
-### cli_tools
-
-Installs CLI tools into `~/.local/bin`. Each entry in `cli_tools` (`roles/cli_tools/defaults/main.yml`) is either a direct binary download or a `.tar.gz` archive:
-
-```yaml
-cli_tools:
-  # Direct binary — downloaded straight to ~/.local/bin/<name>
-  - name: docker-compose
-    url: "https://github.com/docker/compose/releases/download/v5.1.0/docker-compose-linux-x86_64"
-
-  # Archive — downloaded, extracted, binary copied to ~/.local/bin/<name>
-  - name: infisical
-    url: "https://github.com/Infisical/cli/releases/download/v0.43.72/cli_0.43.72_linux_amd64.tar.gz"
-    archive_binary: infisical   # filename inside the archive
-```
-
-**Tag:** `cli_tools`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags cli_tools
-```
-
-### toolbox
-
-Ensures the toolbox container exists (creates it if missing) and installs packages inside it.
-
-Variables in `roles/toolbox/defaults/main.yml`:
-
-- **`toolbox_dnf_packages`** — DNF packages installed inside the toolbox (e.g. `nodejs`, `zip`).
-- **`toolbox_npm_packages`** — npm packages installed globally inside the toolbox (`sudo npm install -g`).
-- **`toolbox_pip_packages`** — pip packages installed for the user inside the toolbox (`pip install --user`).
-- **`toolbox_sdkman_candidates`** — [SDKMAN](https://sdkman.io) candidates installed for the user (e.g. `kotlin`, `quarkus`). SDKMAN itself is installed automatically on first run; its init is added to `~/.bashrc`.
-
-**Tag:** `toolbox`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags toolbox
-```
-
-### git
-
-Sets global `user.name`, `user.email`, and **SSH commit signing** (`gpg.format ssh` + `user.signingkey`). Values come from `vars/local.yml` (git-ignored); see `vars/local.yml.example` for the keys to set.
-
-**Tag:** `git`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags git
-```
-
-### tool_configs
-
-Creates config files for common developer tools:
-
-- **`~/.testcontainers.properties`** — points Testcontainers at the rootless Podman socket and disables Ryuk.
-- **`~/.redhat/io.quarkus.analytics.localconfig`** — opts out of Quarkus build analytics.
-
-**Tag:** `tool_configs`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml user.yml --tags tool_configs
-```
-
----
-
-### rpm_ostree *(system.yml only)*
-
-Enables COPR repositories and layers packages into the Silverblue base image via `rpm-ostree`. **Requires sudo (`-K`) and a reboot to take effect.**
-
-Variables in `roles/rpm_ostree/defaults/main.yml`:
-
-- `**rpm_ostree_packages**` — list of `{ name, copr }` maps (omit `copr` if the package is in the default Fedora repos).
-
-**Tag:** `rpm_ostree`
-
-```bash
-.venv/ansible/bin/ansible-playbook -i inventory/hosts.yml system.yml -K --tags rpm_ostree
-```
-
-After the run, reboot to apply staged changes:
-
-```bash
-systemctl reboot
-```
-
----
-
-Shared paths and version pins live in `vars/main.yml` and in each role's `defaults/main.yml` where applicable.
+## Roles
+
+Detailed documentation now lives in each role directory:
+
+| Role | Tag(s) | Docs |
+|---|---|---|
+| `bootstrap` | `bootstrap` | [`roles/bootstrap/README.md`](roles/bootstrap/README.md) |
+| `ssh_agent` | `ssh_agent` | [`roles/ssh_agent/README.md`](roles/ssh_agent/README.md) |
+| `starship` | `starship` | [`roles/starship/README.md`](roles/starship/README.md) |
+| `flatpaks` | `flatpaks`, `flatpaks_remove` | [`roles/flatpaks/README.md`](roles/flatpaks/README.md) |
+| `gnome_shell_extensions` | `gnome_shell_extensions` | [`roles/gnome_shell_extensions/README.md`](roles/gnome_shell_extensions/README.md) |
+| `gnome_settings` | `gnome_settings` | [`roles/gnome_settings/README.md`](roles/gnome_settings/README.md) |
+| `vscodium_config` | `vscodium_config` | [`roles/vscodium_config/README.md`](roles/vscodium_config/README.md) |
+| `cursor` | `cursor` | [`roles/cursor/README.md`](roles/cursor/README.md) |
+| `cli_tools` | `cli_tools` | [`roles/cli_tools/README.md`](roles/cli_tools/README.md) |
+| `toolbox` | `toolbox` | [`roles/toolbox/README.md`](roles/toolbox/README.md) |
+| `git` | `git` | [`roles/git/README.md`](roles/git/README.md) |
+| `tool_configs` | `tool_configs` | [`roles/tool_configs/README.md`](roles/tool_configs/README.md) |
+| `rpm_ostree` (`system.yml` only) | `rpm_ostree` | [`roles/rpm_ostree/README.md`](roles/rpm_ostree/README.md) |
+
+Shared paths and version pins live in `vars/main.yml` and role `defaults/main.yml` files where applicable.
