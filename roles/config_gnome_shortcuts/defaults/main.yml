@@ -1,0 +1,6 @@
+---
+config_gnome_shortcuts_keybindings:
+  - { schema: org.gnome.desktop.wm.keybindings, key: switch-applications, value: "@as []" }
+  - { schema: org.gnome.desktop.wm.keybindings, key: switch-applications-backward, value: "@as []" }
+  - { schema: org.gnome.desktop.wm.keybindings, key: switch-windows, value: "['<Alt>Tab']" }
+  - { schema: org.gnome.desktop.wm.keybindings, key: switch-windows-backward, value: "['<Shift><Alt>Tab']" }

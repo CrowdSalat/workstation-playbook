@@ -1,0 +1,72 @@
+---
+- name: Fedora workstation (experimental per-tool roles)
+  hosts: localhost
+  gather_facts: true
+
+  vars:
+    bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+    toolbox_name: "fedora-toolbox-43"
+    roles_host:
+      - tool_git
+      - tool_ssh_agent
+      - tool_pre_commit
+      - config_alias
+      - tool_starship
+      - tool_ghostty
+      - tool_podman
+      - tool_cursor
+      - tool_flatseal
+      - tool_obsidian
+      - tool_vscodium
+      - tool_gnome_extensions
+      - config_gnome_shortcuts
+    roles_toolbox:
+      - tool_java
+      - tool_cli_utils
+
+  tasks:
+    - name: Check toolbox availability
+      ansible.builtin.shell: command -v toolbox
+      register: toolbox_check
+      changed_when: false
+      failed_when: false
+      when: roles_toolbox | length > 0
+
+    - name: Explain toolbox prerequisite when missing
+      ansible.builtin.assert:
+        that:
+          - toolbox_check.rc == 0
+        fail_msg: "toolbox is required for delegated toolbox tool roles."
+      when: roles_toolbox | length > 0
+
+    - name: Check existing toolbox containers
+      ansible.builtin.command: toolbox list --containers
+      register: toolbox_list
+      changed_when: false
+      when: roles_toolbox | length > 0
+
+    - name: Create toolbox container when missing
+      ansible.builtin.command: toolbox create --container "{{ toolbox_name }}"
+      when:
+        - roles_toolbox | length > 0
+        - toolbox_name not in toolbox_list.stdout
+
+    - name: Apply host roles
+      ansible.builtin.include_role:
+        name: "{{ role_name }}"
+      loop: "{{ roles_host }}"
+      loop_control:
+        loop_var: role_name
+      tags:
+        - tools
+
+    - name: Apply toolbox roles
+      ansible.builtin.include_role:
+        name: "{{ role_name }}"
+        apply:
+          delegate_to: toolbox_main
+      loop: "{{ roles_toolbox }}"
+      loop_control:
+        loop_var: role_name
+      tags:
+        - tools

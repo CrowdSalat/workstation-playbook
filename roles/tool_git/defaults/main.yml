@@ -1,0 +1,7 @@
+---
+tool_git_user_name: "CrowdSalat"
+tool_git_user_email: "15823789+CrowdSalat@users.noreply.github.com"
+tool_git_default_branch: "main"
+
+tool_git_enable_ssh_signing: false
+tool_git_signing_key: ""

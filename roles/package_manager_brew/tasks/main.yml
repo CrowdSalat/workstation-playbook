@@ -1,0 +1,75 @@
+---
+- name: Check Homebrew in Apple Silicon path
+  ansible.builtin.stat:
+    path: /opt/homebrew/bin/brew
+  register: package_manager_brew_opt_stat
+
+- name: Check Homebrew in Intel path
+  ansible.builtin.stat:
+    path: /usr/local/bin/brew
+  register: package_manager_brew_usr_local_stat
+
+- name: Install Homebrew when missing
+  ansible.builtin.shell: NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  when: not package_manager_brew_opt_stat.stat.exists and not package_manager_brew_usr_local_stat.stat.exists
+  register: package_manager_brew_install
+  changed_when: package_manager_brew_install.rc == 0
+  failed_when: package_manager_brew_install.rc != 0
+
+- name: Re-check Homebrew in Apple Silicon path
+  ansible.builtin.stat:
+    path: /opt/homebrew/bin/brew
+  register: package_manager_brew_opt_stat_after
+
+- name: Re-check Homebrew in Intel path
+  ansible.builtin.stat:
+    path: /usr/local/bin/brew
+  register: package_manager_brew_usr_local_stat_after
+
+- name: Ensure Homebrew is available after bootstrap
+  ansible.builtin.assert:
+    that:
+      - package_manager_brew_opt_stat_after.stat.exists or package_manager_brew_usr_local_stat_after.stat.exists
+    fail_msg: "Homebrew bootstrap completed without a detectable brew binary."
+
+- name: Ensure brew shellenv is present in zprofile
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.zprofile"
+    marker: "# {mark} ANSIBLE MANAGED - brew shellenv"
+    block: |
+      if [ -x /opt/homebrew/bin/brew ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [ -x /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
+    create: true
+    insertafter: EOF
+
+- name: Ensure brew shellenv is present in bash_profile
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.bash_profile"
+    marker: "# {mark} ANSIBLE MANAGED - brew shellenv"
+    block: |
+      if [ -x /opt/homebrew/bin/brew ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [ -x /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
+    create: true
+    insertafter: EOF
+
+- name: Install Homebrew formulae
+  community.general.homebrew:
+    name: "{{ package_manager_brew_formulae }}"
+    state: present
+  when: package_manager_brew_formulae | length > 0
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+
+- name: Install Homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ package_manager_brew_casks }}"
+    state: present
+  when: package_manager_brew_casks | length > 0
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"

@@ -1,0 +1,102 @@
+---
+- name: Check SDKMAN installation
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.sdkman/bin/sdkman-init.sh"
+  register: package_manager_sdkman_init
+
+- name: Install SDKMAN when missing
+  ansible.builtin.shell: curl -s "https://get.sdkman.io" | bash
+  when: not package_manager_sdkman_init.stat.exists
+  register: package_manager_sdkman_bootstrap
+  changed_when: package_manager_sdkman_bootstrap.rc == 0
+  failed_when: package_manager_sdkman_bootstrap.rc != 0
+  environment:
+    HOME: "{{ ansible_facts['env']['HOME'] }}"
+    SDKMAN_DIR: "{{ ansible_facts['env']['HOME'] }}/.sdkman"
+  args:
+    executable: /bin/bash
+    creates: "{{ ansible_facts['env']['HOME'] }}/.sdkman/bin/sdkman-init.sh"
+
+- name: Re-check SDKMAN installation
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.sdkman/bin/sdkman-init.sh"
+  register: package_manager_sdkman_init_after
+
+- name: Ensure SDKMAN is available after bootstrap
+  ansible.builtin.assert:
+    that:
+      - package_manager_sdkman_init_after.stat.exists
+    fail_msg: "SDKMAN bootstrap completed without sdkman-init.sh."
+
+- name: Ensure SDKMAN init is present in bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED - sdkman"
+    block: |
+      export SDKMAN_DIR="$HOME/.sdkman"
+      [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+    create: true
+    insertafter: EOF
+
+- name: Install SDKMAN items
+  ansible.builtin.shell: |
+    set -eo pipefail
+    export HOME="{{ ansible_facts['env']['HOME'] }}"
+    export SDKMAN_DIR="$HOME/.sdkman"
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    entry='{{ item }}'
+    candidate="${entry%%@*}"
+
+    if [ "$candidate" != "$entry" ]; then
+      identifier="${entry#*@}"
+      if [ -d "$HOME/.sdkman/candidates/$candidate/$identifier" ]; then
+        echo NOCHANGE
+        exit 0
+      fi
+      printf 'n\n' | sdk install "$candidate" "$identifier"
+      echo CHANGED
+      exit 0
+    fi
+
+    if [ -L "$HOME/.sdkman/candidates/$candidate/current" ]; then
+      echo NOCHANGE
+      exit 0
+    fi
+
+    printf 'n\n' | sdk install "$candidate"
+    echo CHANGED
+  loop: "{{ package_manager_sdkman_items }}"
+  register: package_manager_sdkman_install_results
+  changed_when: "'CHANGED' in (stdout | default(''))"
+  args:
+    executable: /bin/bash
+
+- name: Set SDKMAN defaults
+  ansible.builtin.shell: |
+    set -eo pipefail
+    export HOME="{{ ansible_facts['env']['HOME'] }}"
+    export SDKMAN_DIR="$HOME/.sdkman"
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    entry='{{ item }}'
+    candidate="${entry%%@*}"
+    identifier="${entry#*@}"
+
+    if [ "$candidate" = "$identifier" ]; then
+      echo "Default entry must use candidate@identifier format: $entry"
+      exit 2
+    fi
+
+    current_line="$(sdk current "$candidate" 2>/dev/null || true)"
+    current="${current_line##* }"
+    if [ "$current" = "$identifier" ]; then
+      echo NOCHANGE
+      exit 0
+    fi
+
+    sdk default "$candidate" "$identifier"
+    echo CHANGED
+  loop: "{{ package_manager_sdkman_defaults }}"
+  register: package_manager_sdkman_default_results
+  changed_when: "'CHANGED' in (stdout | default(''))"
+  args:
+    executable: /bin/bash

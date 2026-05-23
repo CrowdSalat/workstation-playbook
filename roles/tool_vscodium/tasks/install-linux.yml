@@ -1,0 +1,7 @@
+---
+- name: Install VSCodium via Flatpak package manager role
+  ansible.builtin.include_role:
+    name: package_manager_flatpak
+  vars:
+    package_manager_flatpak_packages:
+      - "{{ tool_vscodium_flatpak_id }}"

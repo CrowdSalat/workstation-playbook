@@ -1,0 +1,92 @@
+---
+- name: Install Extension Manager via Flatpak package manager role
+  ansible.builtin.include_role:
+    name: package_manager_flatpak
+  vars:
+    package_manager_flatpak_packages:
+      - "{{ tool_gnome_extensions_manager_flatpak_id }}"
+
+- name: Check GNOME Shell command availability
+  ansible.builtin.command: command -v gnome-shell
+  register: tool_gnome_extensions_gnome_shell_cmd
+  changed_when: false
+  failed_when: false
+
+- name: Check gnome-extensions command availability
+  ansible.builtin.command: command -v gnome-extensions
+  register: tool_gnome_extensions_cli_cmd
+  changed_when: false
+  failed_when: false
+
+- name: Ensure GNOME Shell user extension directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.local/share/gnome-shell/extensions"
+    state: directory
+    mode: "0755"
+  when:
+    - tool_gnome_extensions_gnome_shell_cmd.rc == 0
+    - tool_gnome_extensions_cli_cmd.rc == 0
+
+- name: Get GNOME Shell version
+  ansible.builtin.command: gnome-shell --version
+  register: tool_gnome_extensions_version_output
+  changed_when: false
+  when:
+    - tool_gnome_extensions_gnome_shell_cmd.rc == 0
+    - tool_gnome_extensions_cli_cmd.rc == 0
+
+- name: Set GNOME Shell major version
+  ansible.builtin.set_fact:
+    tool_gnome_extensions_major: "{{ tool_gnome_extensions_version_output.stdout | regex_search('([0-9]+)', '\\1') | first }}"
+  when:
+    - tool_gnome_extensions_gnome_shell_cmd.rc == 0
+    - tool_gnome_extensions_cli_cmd.rc == 0
+
+- name: Download GNOME Shell extensions
+  ansible.builtin.get_url:
+    url: "https://extensions.gnome.org/download-extension/{{ extension_uuid }}.shell-extension.zip?shell_version={{ tool_gnome_extensions_major }}"
+    dest: "/tmp/{{ extension_uuid }}.zip"
+    mode: "0644"
+    force: false
+  loop: "{{ tool_gnome_extensions_uuids }}"
+  loop_control:
+    loop_var: extension_uuid
+  when:
+    - tool_gnome_extensions_gnome_shell_cmd.rc == 0
+    - tool_gnome_extensions_cli_cmd.rc == 0
+
+- name: Create extension directories
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.local/share/gnome-shell/extensions/{{ extension_uuid }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ tool_gnome_extensions_uuids }}"
+  loop_control:
+    loop_var: extension_uuid
+  when:
+    - tool_gnome_extensions_gnome_shell_cmd.rc == 0
+    - tool_gnome_extensions_cli_cmd.rc == 0
+
+- name: Extract GNOME Shell extensions
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ extension_uuid }}.zip"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.local/share/gnome-shell/extensions/{{ extension_uuid }}"
+    remote_src: true
+  loop: "{{ tool_gnome_extensions_uuids }}"
+  loop_control:
+    loop_var: extension_uuid
+  when:
+    - tool_gnome_extensions_gnome_shell_cmd.rc == 0
+    - tool_gnome_extensions_cli_cmd.rc == 0
+
+- name: Enable GNOME Shell extensions
+  ansible.builtin.command: gnome-extensions enable {{ extension_uuid }}
+  loop: "{{ tool_gnome_extensions_uuids }}"
+  loop_control:
+    loop_var: extension_uuid
+  register: tool_gnome_extensions_enable_result
+  changed_when: tool_gnome_extensions_enable_result.rc == 0
+  failed_when: false
+  when:
+    - tool_gnome_extensions_gnome_shell_cmd.rc == 0
+    - tool_gnome_extensions_cli_cmd.rc == 0

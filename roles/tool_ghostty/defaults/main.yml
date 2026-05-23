@@ -1,0 +1,6 @@
+---
+tool_ghostty_linux_rpm_ostree_packages:
+  - name: ghostty
+    copr: alternateved/ghostty
+
+tool_ghostty_macos_cask: ghostty

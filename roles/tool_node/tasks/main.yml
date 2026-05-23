@@ -1,0 +1,7 @@
+---
+- name: Install Node.js runtime via npm package manager role
+  ansible.builtin.include_role:
+    name: package_manager_npm
+  vars:
+    package_manager_npm_node_version: "{{ tool_node_version }}"
+    package_manager_npm_packages: []

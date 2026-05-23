@@ -1,0 +1,4 @@
+---
+tool_pi_node_version: "lts/*"
+tool_pi_npm_packages:
+  - "@earendil-works/pi-coding-agent"

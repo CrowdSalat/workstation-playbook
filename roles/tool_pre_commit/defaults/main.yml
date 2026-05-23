@@ -1,0 +1,3 @@
+---
+tool_pre_commit_pip_packages:
+  - pre-commit

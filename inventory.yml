@@ -1,0 +1,10 @@
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: /usr/bin/python3
+    toolbox_main:
+      ansible_connection: containers.podman.podman
+      ansible_host: fedora-toolbox-43
+      ansible_user: jan
+      ansible_python_interpreter: /usr/bin/python3

@@ -1,0 +1,6 @@
+---
+- name: Install CLI utils via dnf package manager role
+  ansible.builtin.include_role:
+    name: package_manager_dnf
+  vars:
+    package_manager_dnf_packages: "{{ tool_cli_utils_linux_dnf_packages }}"

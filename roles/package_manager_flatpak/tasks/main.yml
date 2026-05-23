@@ -1,0 +1,27 @@
+---
+- name: Check Flatpak availability
+  ansible.builtin.command: command -v flatpak
+  register: package_manager_flatpak_check
+  changed_when: false
+  failed_when: false
+
+- name: Explain Flatpak prerequisite when missing
+  ansible.builtin.assert:
+    that:
+      - package_manager_flatpak_check.rc == 0
+    fail_msg: "Flatpak is required for package_manager_flatpak. Install Flatpak first, then rerun."
+
+- name: Ensure Flatpak remote exists
+  community.general.flatpak_remote:
+    name: "{{ package_manager_flatpak_remote_name }}"
+    flatpakrepo_url: "{{ package_manager_flatpak_remote_url }}"
+    method: user
+    state: present
+  when: package_manager_flatpak_packages | length > 0
+
+- name: Install Flatpak packages
+  community.general.flatpak:
+    name: "{{ item }}"
+    state: present
+    method: user
+  loop: "{{ package_manager_flatpak_packages }}"

@@ -1,0 +1,7 @@
+---
+- name: Install Ghostty via Homebrew package manager role
+  ansible.builtin.include_role:
+    name: package_manager_brew
+  vars:
+    package_manager_brew_casks:
+      - "{{ tool_ghostty_macos_cask }}"

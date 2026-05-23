@@ -1,0 +1,6 @@
+---
+- name: Install CLI utils via Homebrew package manager role
+  ansible.builtin.include_role:
+    name: package_manager_brew
+  vars:
+    package_manager_brew_formulae: "{{ tool_cli_utils_macos_brew_formulae }}"

@@ -1,0 +1,6 @@
+---
+- name: Install Ghostty via rpm-ostree package manager role
+  ansible.builtin.include_role:
+    name: package_manager_rpm_ostree
+  vars:
+    package_manager_rpm_ostree_packages: "{{ tool_ghostty_linux_rpm_ostree_packages }}"

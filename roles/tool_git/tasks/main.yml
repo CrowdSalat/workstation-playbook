@@ -1,0 +1,39 @@
+---
+- name: Set git user name
+  ansible.builtin.git_config:
+    name: user.name
+    value: "{{ tool_git_user_name }}"
+    scope: global
+
+- name: Set git user email
+  ansible.builtin.git_config:
+    name: user.email
+    value: "{{ tool_git_user_email }}"
+    scope: global
+
+- name: Set default branch name for new repositories
+  ansible.builtin.git_config:
+    name: init.defaultBranch
+    value: "{{ tool_git_default_branch }}"
+    scope: global
+
+- name: Enable automatic upstream creation on first push
+  ansible.builtin.git_config:
+    name: push.autoSetupRemote
+    value: "true"
+    scope: global
+
+- name: Enable SSH signing for commits
+  ansible.builtin.git_config:
+    name: "{{ git_setting.name }}"
+    value: "{{ git_setting.value }}"
+    scope: global
+  loop:
+    - { name: commit.gpgsign, value: "true" }
+    - { name: gpg.format, value: "ssh" }
+    - { name: user.signingkey, value: "{{ tool_git_signing_key }}" }
+  loop_control:
+    loop_var: git_setting
+  when:
+    - tool_git_enable_ssh_signing | bool
+    - tool_git_signing_key | length > 0

@@ -1,0 +1,30 @@
+---
+- name: macOS workstation (experimental per-tool roles)
+  hosts: localhost
+  gather_facts: true
+
+  vars:
+    bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+    roles_host:
+      - tool_git
+      - tool_ssh_agent
+      - tool_pre_commit
+      - config_alias
+      - tool_starship
+      - tool_ghostty
+      - tool_podman
+      - tool_cursor
+      - tool_obsidian
+      - tool_java
+      - tool_cli_utils
+      - tool_vscodium
+
+  tasks:
+    - name: Apply enabled roles
+      ansible.builtin.include_role:
+        name: "{{ role_name }}"
+      loop: "{{ roles_host }}"
+      loop_control:
+        loop_var: role_name
+      tags:
+        - tools

@@ -1,0 +1,52 @@
+---
+- name: Check Python availability
+  ansible.builtin.command: command -v {{ package_manager_pip_python }}
+  register: package_manager_pip_python_check
+  changed_when: false
+  failed_when: false
+
+- name: Explain Python prerequisite when missing
+  ansible.builtin.assert:
+    that:
+      - package_manager_pip_python_check.rc == 0
+    fail_msg: "{{ package_manager_pip_python }} is required for package_manager_pip."
+
+- name: Check pip availability
+  ansible.builtin.command: "{{ package_manager_pip_python }} -m pip --version"
+  register: package_manager_pip_check
+  changed_when: false
+  failed_when: false
+
+- name: Bootstrap pip via ensurepip when missing
+  ansible.builtin.command: "{{ package_manager_pip_python }} -m ensurepip --upgrade"
+  when: package_manager_pip_check.rc != 0
+  register: package_manager_pip_ensurepip
+  changed_when: package_manager_pip_ensurepip.rc == 0
+  failed_when: false
+
+- name: Re-check pip availability
+  ansible.builtin.command: "{{ package_manager_pip_python }} -m pip --version"
+  register: package_manager_pip_check_after
+  changed_when: false
+  failed_when: false
+
+- name: Ensure pip is available after bootstrap
+  ansible.builtin.assert:
+    that:
+      - package_manager_pip_check_after.rc == 0
+    fail_msg: "pip is unavailable for {{ package_manager_pip_python }} after ensurepip bootstrap attempt."
+
+- name: Install pip packages
+  ansible.builtin.command: >-
+    {{ package_manager_pip_python }} -m pip install
+    {{ '--user' if package_manager_pip_user else '' }}
+    {{ pip_package }}
+  register: package_manager_pip_install
+  changed_when: >-
+    'Requirement already satisfied' not in
+    ((package_manager_pip_install.stdout | default('')) ~ (package_manager_pip_install.stderr | default('')))
+  failed_when: package_manager_pip_install.rc != 0
+  loop: "{{ package_manager_pip_packages }}"
+  loop_control:
+    loop_var: pip_package
+  when: package_manager_pip_packages | length > 0

@@ -1,0 +1,16 @@
+---
+tool_podman_linux_rpm_ostree_packages:
+  - name: podman
+  - name: podman-compose
+
+tool_podman_linux_flatpak_packages:
+  - io.podman_desktop.PodmanDesktop
+
+tool_podman_macos_brew_formulae:
+  - podman
+  - podman-compose
+
+tool_podman_macos_brew_casks:
+  - podman-desktop
+
+tool_podman_launch_agent_label: "io.playbook.podman-machine-start"

@@ -1,0 +1,8 @@
+---
+- name: Install Cursor on Linux
+  ansible.builtin.include_tasks: install-linux.yml
+  when: ansible_facts["system"] == "Linux"
+
+- name: Install Cursor on macOS
+  ansible.builtin.include_tasks: install-mac.yml
+  when: ansible_facts["system"] == "Darwin"

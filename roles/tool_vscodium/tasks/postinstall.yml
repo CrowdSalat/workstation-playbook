@@ -1,0 +1,92 @@
+---
+- name: Pick platform-specific VSCodium terminal fragment
+  ansible.builtin.set_fact:
+    tool_vscodium_terminal_json: "{{ tool_vscodium_terminal_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_terminal_json_linux }}"
+
+- name: Optionally add Ghostty as VSCodium external terminal
+  ansible.builtin.set_fact:
+    tool_vscodium_terminal_json: >-
+      {{ (tool_vscodium_terminal_json | from_json) |
+         combine((tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux) | from_json) |
+         to_nice_json }}
+  when: >-
+    'tool_ghostty' in (
+      (roles_host | default([])) +
+      (roles_toolbox | default([]))
+    )
+
+- name: Ensure VSCodium config directory exists
+  ansible.builtin.file:
+    path: "{{ tool_vscodium_config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Stat VSCodium settings
+  ansible.builtin.stat:
+    path: "{{ tool_vscodium_settings }}"
+  register: tool_vscodium_settings_stat
+
+- name: Write initial VSCodium settings
+  ansible.builtin.copy:
+    dest: "{{ tool_vscodium_settings }}"
+    content: "{{ tool_vscodium_terminal_json }}"
+    force: false
+
+- name: Write VSCodium terminal fragment for merge
+  ansible.builtin.copy:
+    dest: "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json"
+    content: "{{ tool_vscodium_terminal_json }}"
+    mode: "0644"
+  when: tool_vscodium_settings_stat.stat.exists and tool_vscodium_settings_stat.stat.size > 0
+  changed_when: false
+
+- name: Merge terminal profile into existing VSCodium settings
+  ansible.builtin.shell: |
+    tmp=$(mktemp)
+    jq -s '.[0] * .[1]' "{{ tool_vscodium_settings }}" "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json" > "$tmp"
+    if cmp -s "$tmp" "{{ tool_vscodium_settings }}"; then
+      rm -f "$tmp" "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json"
+      echo NOCHANGE
+    else
+      mv "$tmp" "{{ tool_vscodium_settings }}"
+      rm -f "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json"
+      echo CHANGED
+    fi
+  when: tool_vscodium_settings_stat.stat.exists and tool_vscodium_settings_stat.stat.size > 0
+  register: tool_vscodium_merge
+  changed_when: "'CHANGED' in (tool_vscodium_merge.stdout | default(''))"
+  failed_when: tool_vscodium_merge.rc != 0
+
+- name: Add code shell function to bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - vscodium code alias"
+    block: |
+      {% if ansible_facts["system"] == "Darwin" %}
+      code() {
+        open -a "VSCodium" "$@" >/dev/null 2>&1 &
+      }
+      {% else %}
+      code() {
+        flatpak run {{ tool_vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
+      }
+      {% endif %}
+    create: true
+    insertafter: EOF
+
+- name: Add codium shell function to bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - vscodium codium alias"
+    block: |
+      {% if ansible_facts["system"] == "Darwin" %}
+      codium() {
+        open -a "VSCodium" "$@" >/dev/null 2>&1 &
+      }
+      {% else %}
+      codium() {
+        flatpak run {{ tool_vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
+      }
+      {% endif %}
+    create: true
+    insertafter: EOF

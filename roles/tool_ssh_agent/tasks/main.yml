@@ -1,0 +1,51 @@
+---
+- name: Ensure local bin directory exists
+  ansible.builtin.file:
+    path: "{{ tool_ssh_agent_local_bin }}"
+    state: directory
+    mode: "0755"
+  when: tool_ssh_agent_enabled | bool
+
+- name: Install keychain script to local bin
+  ansible.builtin.get_url:
+    url: "{{ tool_ssh_agent_keychain_url }}"
+    dest: "{{ tool_ssh_agent_local_bin }}/keychain"
+    mode: "0755"
+    force: true
+  when:
+    - tool_ssh_agent_enabled | bool
+    - tool_ssh_agent_install_keychain | bool
+
+- name: Add SSH agent snippet to bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_ssh_agent_bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - ssh_agent"
+    block: |
+      # Prefer existing agent; else use keychain for shell sessions.
+      if [ -n "${SSH_AUTH_SOCK:-}" ] && [ -S "${SSH_AUTH_SOCK}" ]; then
+        :
+      elif command -v keychain >/dev/null 2>&1; then
+        eval "$({{ tool_ssh_agent_local_bin }}/keychain --eval --quiet {{ tool_ssh_agent_identities | join(' ') }})"
+      fi
+    create: true
+    insertafter: EOF
+  when: tool_ssh_agent_enabled | bool
+
+- name: Ensure .ssh directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.ssh"
+    state: directory
+    mode: "0700"
+  when: tool_ssh_agent_enabled | bool and tool_ssh_agent_manage_ssh_config | bool
+
+- name: Add SSH client defaults for agent use
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.ssh/config"
+    marker: "# {mark} ANSIBLE MANAGED - ssh_agent"
+    block: |
+      Host *
+        AddKeysToAgent yes
+        IdentitiesOnly yes
+    create: true
+    mode: "0600"
+  when: tool_ssh_agent_enabled | bool and tool_ssh_agent_manage_ssh_config | bool

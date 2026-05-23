@@ -1,0 +1,4 @@
+---
+package_manager_flatpak_packages: []
+package_manager_flatpak_remote_name: flathub
+package_manager_flatpak_remote_url: https://dl.flathub.org/repo/flathub.flatpakrepo

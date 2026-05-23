@@ -1,0 +1,10 @@
+---
+tool_gnome_extensions_manager_flatpak_id: com.mattjakeman.ExtensionManager
+tool_gnome_extensions_uuids:
+  - "dash-to-dock@micxgx.gmail.com"
+  - "gsconnect@andyholmes.github.io"
+  - "system-monitor@gnome-shell-extensions.gcampax.github.com"
+  - "mediacontrols@cliffniff.github.com"
+  - "nightthemeswitcher@romainvigier.fr"
+  - "apps-menu@gnome-shell-extensions.gcampax.github.com"
+  - "places-menu@gnome-shell-extensions.gcampax.github.com"

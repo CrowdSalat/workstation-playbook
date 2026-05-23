@@ -1,0 +1,6 @@
+---
+- name: Install pre-commit via pip package manager role
+  ansible.builtin.include_role:
+    name: package_manager_pip
+  vars:
+    package_manager_pip_packages: "{{ tool_pre_commit_pip_packages }}"

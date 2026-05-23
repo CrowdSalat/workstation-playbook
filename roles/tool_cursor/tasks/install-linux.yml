@@ -1,0 +1,39 @@
+---
+- name: Ensure Cursor applications directories exist
+  ansible.builtin.file:
+    path: "{{ cursor_path }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ tool_cursor_applications_dir }}"
+    - "{{ tool_cursor_local_share_apps }}"
+  loop_control:
+    loop_var: cursor_path
+
+- name: Fetch Cursor download metadata
+  ansible.builtin.uri:
+    url: "{{ tool_cursor_appimage_url }}"
+    return_content: true
+  register: tool_cursor_download_info
+
+- name: Download Cursor AppImage
+  ansible.builtin.get_url:
+    url: "{{ (tool_cursor_download_info.content | from_json).downloadUrl }}"
+    dest: "{{ tool_cursor_applications_dir }}/cursor.AppImage"
+    mode: "0755"
+    force: true
+
+- name: Write Cursor desktop launcher
+  ansible.builtin.copy:
+    dest: "{{ tool_cursor_local_share_apps }}/cursor.desktop"
+    content: |
+      [Desktop Entry]
+      Name=Cursor
+      Comment=AI-powered IDE
+      Exec={{ tool_cursor_applications_dir }}/cursor.AppImage %F
+      Icon=cursor
+      Type=Application
+      Categories=Development;IDE;TextEditor;
+      MimeType=text/plain;inode/directory;
+      StartupWMClass=Cursor
+    mode: "0644"

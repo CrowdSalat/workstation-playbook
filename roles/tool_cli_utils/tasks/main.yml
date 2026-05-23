@@ -1,0 +1,8 @@
+---
+- name: Install CLI utils on Linux via dnf
+  ansible.builtin.include_tasks: install-linux.yml
+  when: ansible_facts["system"] == "Linux"
+
+- name: Install CLI utils on macOS via Homebrew
+  ansible.builtin.include_tasks: install-mac.yml
+  when: ansible_facts["system"] == "Darwin"

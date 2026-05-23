@@ -1,0 +1,62 @@
+---
+- name: Install Podman CLI and podman-compose via Homebrew package manager role
+  ansible.builtin.include_role:
+    name: package_manager_brew
+  vars:
+    package_manager_brew_formulae: "{{ tool_podman_macos_brew_formulae }}"
+    package_manager_brew_casks: "{{ tool_podman_macos_brew_casks }}"
+
+- name: Check if Podman machine exists
+  ansible.builtin.command: podman machine inspect
+  register: tool_podman_machine_inspect
+  changed_when: false
+  failed_when: false
+
+- name: Initialize Podman machine when missing
+  ansible.builtin.command: podman machine init
+  when: tool_podman_machine_inspect.rc != 0
+  register: tool_podman_machine_init
+  changed_when: tool_podman_machine_init.rc == 0
+  failed_when: tool_podman_machine_init.rc != 0
+
+- name: Ensure LaunchAgents directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/Library/LaunchAgents"
+    state: directory
+    mode: "0755"
+
+- name: Configure podman machine autostart at login
+  ansible.builtin.copy:
+    dest: "{{ ansible_facts['env']['HOME'] }}/Library/LaunchAgents/{{ tool_podman_launch_agent_label }}.plist"
+    mode: "0644"
+    content: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>{{ tool_podman_launch_agent_label }}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>/bin/sh</string>
+          <string>-lc</string>
+          <string>podman machine start || true</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+      </dict>
+      </plist>
+
+- name: Load podman machine autostart launch agent
+  ansible.builtin.shell: |
+    launchctl bootout "gui/$(id -u)/{{ tool_podman_launch_agent_label }}" >/dev/null 2>&1 || true
+    launchctl bootstrap "gui/$(id -u)" "{{ ansible_facts['env']['HOME'] }}/Library/LaunchAgents/{{ tool_podman_launch_agent_label }}.plist"
+  register: tool_podman_launchctl
+  changed_when: tool_podman_launchctl.rc == 0
+  failed_when: tool_podman_launchctl.rc != 0
+
+- name: Ensure Podman machine is currently running
+  ansible.builtin.shell: podman machine start
+  register: tool_podman_machine_start
+  changed_when: "'already running' not in ((tool_podman_machine_start.stdout | default('')) ~ (tool_podman_machine_start.stderr | default(''))) | lower"
+  failed_when: tool_podman_machine_start.rc != 0

@@ -1,0 +1,5 @@
+---
+tool_cursor_appimage_url: "https://www.cursor.com/api/download?platform=linux-x64&releaseTrack=stable"
+tool_cursor_applications_dir: "{{ ansible_facts['env']['HOME'] }}/.local/appimages"
+tool_cursor_local_share_apps: "{{ ansible_facts['env']['HOME'] }}/.local/share/applications"
+tool_cursor_macos_cask: cursor

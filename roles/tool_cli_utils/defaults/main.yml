@@ -1,0 +1,10 @@
+---
+tool_cli_utils_linux_dnf_packages:
+  - jq
+  - yq
+  - tree
+
+tool_cli_utils_macos_brew_formulae:
+  - jq
+  - yq
+  - tree

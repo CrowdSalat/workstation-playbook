@@ -1,0 +1,78 @@
+---
+- name: Check nvm installation
+  ansible.builtin.stat:
+    path: "{{ package_manager_npm_nvm_dir }}/nvm.sh"
+  register: package_manager_npm_nvm_sh
+
+- name: Install nvm when missing
+  ansible.builtin.shell: curl -fsSL "{{ package_manager_npm_nvm_install_url }}" | bash
+  when: not package_manager_npm_nvm_sh.stat.exists
+  register: package_manager_npm_nvm_bootstrap
+  changed_when: package_manager_npm_nvm_bootstrap.rc == 0
+  failed_when: package_manager_npm_nvm_bootstrap.rc != 0
+  args:
+    executable: /bin/bash
+    creates: "{{ package_manager_npm_nvm_dir }}/nvm.sh"
+  environment:
+    HOME: "{{ ansible_facts['env']['HOME'] }}"
+
+- name: Ensure nvm init is present in bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ package_manager_npm_bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - nvm"
+    block: |
+      export NVM_DIR="{{ package_manager_npm_nvm_dir }}"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    create: true
+    insertafter: EOF
+
+- name: Ensure nvm init is present in zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ package_manager_npm_zshrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - nvm"
+    block: |
+      export NVM_DIR="{{ package_manager_npm_nvm_dir }}"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    create: true
+    insertafter: EOF
+
+- name: Ensure Node.js version is installed and default via nvm
+  ansible.builtin.shell: |
+    set -eo pipefail
+    export HOME="{{ ansible_facts['env']['HOME'] }}"
+    export NVM_DIR="{{ package_manager_npm_nvm_dir }}"
+    . "$NVM_DIR/nvm.sh"
+    before="$(nvm version default || true)"
+    nvm install "{{ package_manager_npm_node_version }}" >/dev/null
+    nvm alias default "{{ package_manager_npm_node_version }}" >/dev/null
+    after="$(nvm version default || true)"
+    if [ "$before" != "$after" ]; then
+      echo CHANGED
+    else
+      echo NOCHANGE
+    fi
+  register: package_manager_npm_node_setup
+  changed_when: "'CHANGED' in (package_manager_npm_node_setup.stdout | default(''))"
+  args:
+    executable: /bin/bash
+
+- name: Install npm global packages
+  ansible.builtin.shell: |
+    set -eo pipefail
+    export HOME="{{ ansible_facts['env']['HOME'] }}"
+    export NVM_DIR="{{ package_manager_npm_nvm_dir }}"
+    . "$NVM_DIR/nvm.sh"
+    nvm use "{{ package_manager_npm_node_version }}" >/dev/null
+    if npm list -g --depth=0 "{{ npm_pkg }}" >/dev/null 2>&1; then
+      echo NOCHANGE
+    else
+      npm install -g "{{ npm_pkg }}"
+      echo CHANGED
+    fi
+  loop: "{{ package_manager_npm_packages }}"
+  loop_control:
+    loop_var: npm_pkg
+  register: package_manager_npm_packages_install
+  changed_when: "'CHANGED' in (stdout | default(''))"
+  args:
+    executable: /bin/bash

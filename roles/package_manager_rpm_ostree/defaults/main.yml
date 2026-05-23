@@ -1,0 +1,5 @@
+---
+# Items can be:
+# - { name: "pkg" }
+# - { name: "pkg", copr: "owner/project" }
+package_manager_rpm_ostree_packages: []

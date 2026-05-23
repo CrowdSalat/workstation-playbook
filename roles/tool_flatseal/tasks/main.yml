@@ -1,0 +1,4 @@
+---
+- name: Install Flatseal on Linux
+  ansible.builtin.include_tasks: install-linux.yml
+  when: ansible_facts["system"] == "Linux"

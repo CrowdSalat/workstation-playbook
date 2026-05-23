@@ -1,0 +1,7 @@
+---
+- name: Install Java via SDKMAN
+  ansible.builtin.include_role:
+    name: package_manager_sdkman
+  vars:
+    package_manager_sdkman_items: "{{ tool_java_sdkman_items }}"
+    package_manager_sdkman_defaults: "{{ tool_java_sdkman_defaults }}"

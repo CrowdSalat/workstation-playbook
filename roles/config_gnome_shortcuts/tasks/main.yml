@@ -1,0 +1,24 @@
+---
+- name: Check gsettings command availability
+  ansible.builtin.command: command -v gsettings
+  register: config_gnome_shortcuts_gsettings_cmd
+  changed_when: false
+  failed_when: false
+
+- name: Apply GNOME shortcut keybindings via gsettings
+  ansible.builtin.shell:
+    cmd: |
+      current=$(gsettings get {{ gnome_shortcut.schema }} {{ gnome_shortcut.key }} 2>/dev/null)
+      if [ "$current" != "$DESIRED" ]; then
+        gsettings set {{ gnome_shortcut.schema }} {{ gnome_shortcut.key }} "$DESIRED"
+        echo CHANGED
+      fi
+  environment:
+    DESIRED: "{{ gnome_shortcut.value }}"
+  register: config_gnome_shortcuts_result
+  changed_when: "'CHANGED' in config_gnome_shortcuts_result.stdout"
+  loop: "{{ config_gnome_shortcuts_keybindings }}"
+  loop_control:
+    loop_var: gnome_shortcut
+    label: "{{ gnome_shortcut.schema }} {{ gnome_shortcut.key }}"
+  when: config_gnome_shortcuts_gsettings_cmd.rc == 0

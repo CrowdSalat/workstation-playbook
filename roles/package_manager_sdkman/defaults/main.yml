@@ -1,0 +1,9 @@
+---
+# Format:
+# - candidate (install default)
+# - candidate@identifier (install exact version identifier)
+package_manager_sdkman_items: []
+
+# Optional defaults to set after installation.
+# Same format as package_manager_sdkman_items.
+package_manager_sdkman_defaults: []

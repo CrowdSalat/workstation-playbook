@@ -1,0 +1,11 @@
+---
+- name: Install VSCodium on Linux
+  ansible.builtin.include_tasks: install-linux.yml
+  when: ansible_facts["system"] == "Linux"
+
+- name: Install VSCodium on macOS
+  ansible.builtin.include_tasks: install-mac.yml
+  when: ansible_facts["system"] == "Darwin"
+
+- name: Apply VSCodium postinstall
+  ansible.builtin.include_tasks: postinstall.yml

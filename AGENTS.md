@@ -1,30 +1,48 @@
-# Agent instructions
+# Agent Guidance for `playbook-next`
 
-Ansible playbooks and roles for **Fedora Silverblue** (immutable desktop, toolbox workflows). Treat guidance here as defaults; prefer what existing roles already do when they differ.
+This file defines high-level guidance for agents working inside
+`playbook-next`. It complements (does not replace) workspace-level guidance in
+the repository root `AGENTS.md`.
 
-## Environment and assumptions
+## Scope and intent
 
-- Target users run **Silverblue** and use **toolboxes**; assume a **shared home directory** between the host and toolboxes when reasoning about paths, idempotency, and “where this file lands.”
-- Prefer patterns that work without layering packages onto the host image unless there is no alternative.
+- `playbook-next` is an architecture migration area.
+- Prefer incremental, low-risk changes with real Ansible validation.
+- Keep behavior readable and explicit over heavy abstraction.
 
-## Playbook conventions
+## Role architecture
 
-When adding or editing tasks in this repository:
+- Use three role families:
+  - `tool_*`: user-facing tool intent (install + tool-specific config)
+  - `package_manager_*`: installation mechanics and manager readiness
+  - `config_*`: cross-cutting configuration not owned by one tool
+- Keep `package_manager_*` roles toolbox-agnostic.
+- Control toolbox execution context in playbooks (delegation), not inside PM roles.
 
-- **GUI applications:** install with **Flatpak** using Ansible’s `community.general.flatpak` module (not ad-hoc `flatpak` shell unless the module cannot express the case).
-- **CLI tools:** prefer shipping binaries or archives into **`~/.local/bin`** (user-writable, toolbox-friendly) rather than system paths unless the role already uses another layout.
-- **Shell configuration:** add interactive-shell snippets to **`~/.bashrc`** for the managed user unless a role explicitly targets another shell.
-- **Podman / Docker volumes:** when mounting host paths into containers, append the **`:Z`** SELinux relabel flag unless the playbook already handles labeling another documented way.
-- **`rpm-ostree`:** do **not** introduce `rpm-ostree` tasks or advise host layering unless the user explicitly asks for it.
+## Playbook execution model
 
-## Git commits
+- Fedora uses split role lists:
+  - `roles_host`
+  - `roles_toolbox`
+- macOS uses host list:
+  - `roles_host`
+- Toolbox prerequisites in playbook tasks should run only when
+  `roles_toolbox | length > 0`.
 
-When writing commit messages (including suggested messages in chat):
+## Editing and safety
 
-- **[Conventional Commits](https://www.conventionalcommits.org/)** — use `type(optional scope): summary`. Pick a fitting `type` (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, etc.); add a short `scope` when it clarifies the area (role name, component).
-- **Subject** — imperative after the colon; the header line is at most **72 characters** total (including `type(scope): `), no trailing period.
-- **Body** — optional. Add a blank line and a short body only when it helps (e.g. why, migration hint). Keep it tight; avoid long bodies that restate the diff.
-- **Footers** — none, except a **`BREAKING CHANGE:`** footer when documenting a breaking change, as Conventional Commits allows. Mark breaking commits with `!` on the type or scope when that is enough (`feat!:`, `feat(scope)!:`).
-- **One logical change per commit** — do not mix unrelated topics; avoid splitting one logical change into many tiny commits.
+- Do not revert unrelated user changes.
+- Avoid destructive git operations.
+- Keep idempotency in mind for all tasks.
+- Prefer explicit defaults and clear variable naming.
 
-Examples: `feat(teddycloud): add OCP entrypoint and Dockerfile`, `fix(metallb): correct BGP peer configuration`.
+## Validation workflow
+
+- Run syntax checks after structural changes.
+- Prefer focused test runs using role-list overrides to isolate behavior.
+- Escalate to broader runs only after focused runs pass.
+
+## Detailed conventions
+
+See `ROLE_CONVENTIONS.md` for detailed implementation rules (naming patterns,
+task file layout, toolbox model, SDKMAN item format).

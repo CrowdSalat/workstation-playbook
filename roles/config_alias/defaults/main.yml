@@ -1,0 +1,6 @@
+---
+config_alias_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+config_alias_zshrc: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+config_alias_lines:
+  - alias ll='ls -alF'
+  - alias la='ls -A'

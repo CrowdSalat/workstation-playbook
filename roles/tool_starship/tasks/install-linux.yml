@@ -1,0 +1,44 @@
+---
+- name: Ensure local bin directory exists
+  ansible.builtin.file:
+    path: "{{ tool_starship_local_bin }}"
+    state: directory
+    mode: "0755"
+
+- name: Download Starship binary archive
+  ansible.builtin.get_url:
+    url: "{{ tool_starship_url }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
+    mode: "0644"
+    force: true
+
+- name: Unarchive Starship into local bin
+  ansible.builtin.unarchive:
+    src: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
+    dest: "{{ tool_starship_local_bin }}"
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    creates: "{{ tool_starship_local_bin }}/starship"
+
+- name: Remove Starship archive
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
+    state: absent
+
+- name: Initialize Starship in bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_starship_bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - starship"
+    block: |
+      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_local_bin }}/starship init bash)"
+    create: true
+    insertafter: EOF
+
+- name: Initialize Starship in zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_starship_zshrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - starship"
+    block: |
+      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_local_bin }}/starship init zsh)"
+    create: true
+    insertafter: EOF

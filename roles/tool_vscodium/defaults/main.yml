@@ -1,0 +1,31 @@
+---
+tool_vscodium_config_dir: "{{ ansible_facts['env']['HOME'] }}/.config/VSCodium/User"
+tool_vscodium_settings: "{{ tool_vscodium_config_dir }}/settings.json"
+tool_vscodium_flatpak_id: com.vscodium.codium
+tool_vscodium_macos_cask: vscodium
+
+tool_vscodium_terminal_json_linux: |
+  {
+    "terminal.integrated.profiles.linux": {
+      "Toolbox (host-spawn)": {
+        "path": "flatpak-spawn",
+        "args": ["--host", "toolbox", "run", "{{ toolbox_name }}", "bash"]
+      }
+    },
+    "terminal.integrated.defaultProfile.linux": "Toolbox (host-spawn)"
+  }
+
+tool_vscodium_terminal_json_macos: |
+  {
+    "terminal.integrated.defaultProfile.osx": "bash"
+  }
+
+tool_vscodium_ghostty_external_json_linux: |
+  {
+    "terminal.external.linuxExec": "ghostty"
+  }
+
+tool_vscodium_ghostty_external_json_macos: |
+  {
+    "terminal.external.osxExec": "ghostty"
+  }

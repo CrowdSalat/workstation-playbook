@@ -1,8 +1,0 @@
----
-# Values use GVariant notation as returned by `gsettings get` for idempotency checks.
-gnome_keybindings:
-  # Use Alt+Tab to cycle individual windows instead of applications.
-  - { schema: org.gnome.desktop.wm.keybindings, key: switch-applications, value: "@as []" }
-  - { schema: org.gnome.desktop.wm.keybindings, key: switch-applications-backward, value: "@as []" }
-  - { schema: org.gnome.desktop.wm.keybindings, key: switch-windows, value: "['<Alt>Tab']" }
-  - { schema: org.gnome.desktop.wm.keybindings, key: switch-windows-backward, value: "['<Shift><Alt>Tab']" }
