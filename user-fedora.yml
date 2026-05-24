@@ -18,6 +18,7 @@
       - tool_cursor
       - tool_flatseal
       - tool_obsidian
+      - tool_browser
       - tool_vscodium
       - tool_gnome_extensions
       - config_gnome_shortcuts

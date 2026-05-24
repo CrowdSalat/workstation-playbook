@@ -1,0 +1,8 @@
+---
+tool_browser_linux_flatpak_ids:
+  - org.mozilla.firefox
+  - org.chromium.Chromium
+
+tool_browser_macos_casks:
+  - firefox
+  - chromium

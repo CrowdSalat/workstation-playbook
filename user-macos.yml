@@ -16,6 +16,7 @@
       - tool_podman
       - tool_cursor
       - tool_obsidian
+      - tool_browser
       - tool_java
       - tool_cli_utils
       - tool_vscodium
