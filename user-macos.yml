@@ -5,6 +5,7 @@
 
   vars:
     bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+    workstation_ssh_identity: id_ed25519
     roles_host:
       - tool_git
       - tool_ssh_agent

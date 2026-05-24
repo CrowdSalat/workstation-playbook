@@ -4,7 +4,7 @@ tool_ssh_agent_install_keychain: false
 tool_ssh_agent_keychain_version: "2.9.8"
 tool_ssh_agent_keychain_url: "https://raw.githubusercontent.com/danielrobbins/keychain/v{{ tool_ssh_agent_keychain_version }}/keychain"
 tool_ssh_agent_identities:
-  - id_ed25519
+  - "{{ workstation_ssh_identity | default('id_ed25519') }}"
 tool_ssh_agent_manage_ssh_config: true
 tool_ssh_agent_local_bin: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
 tool_ssh_agent_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"

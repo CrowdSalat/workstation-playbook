@@ -3,5 +3,5 @@ tool_git_user_name: "CrowdSalat"
 tool_git_user_email: "15823789+CrowdSalat@users.noreply.github.com"
 tool_git_default_branch: "main"
 
-tool_git_enable_ssh_signing: false
-tool_git_signing_key: ""
+tool_git_enable_ssh_signing: true
+tool_git_signing_key: "{{ ansible_facts['env']['HOME'] }}/.ssh/{{ workstation_ssh_identity | default('id_ed25519') }}.pub"
