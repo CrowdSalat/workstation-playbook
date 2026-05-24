@@ -1,0 +1,61 @@
+---
+- name: Check pipx availability
+  ansible.builtin.command: command -v pipx
+  register: package_manager_pipx_check
+  changed_when: false
+  failed_when: false
+
+- name: Bootstrap pipx on Linux via pip
+  ansible.builtin.command: >-
+    {{ package_manager_pipx_python }} -m pip install --user pipx
+  when:
+    - package_manager_pipx_check.rc != 0
+    - ansible_facts["system"] == "Linux"
+  register: package_manager_pipx_bootstrap_linux
+  changed_when: >-
+    'Requirement already satisfied' not in
+    ((package_manager_pipx_bootstrap_linux.stdout | default('')) ~ (package_manager_pipx_bootstrap_linux.stderr | default('')))
+  failed_when: package_manager_pipx_bootstrap_linux.rc != 0
+
+- name: Bootstrap pipx on macOS via Homebrew
+  ansible.builtin.include_role:
+    name: package_manager_brew
+  vars:
+    package_manager_brew_formulae:
+      - "{{ package_manager_pipx_bootstrap_brew_formula }}"
+  when:
+    - package_manager_pipx_check.rc != 0
+    - ansible_facts["system"] == "Darwin"
+
+- name: Re-check pipx availability
+  ansible.builtin.command: command -v pipx
+  register: package_manager_pipx_check_after
+  changed_when: false
+  failed_when: false
+
+- name: Ensure pipx is available after bootstrap
+  ansible.builtin.assert:
+    that:
+      - package_manager_pipx_check_after.rc == 0
+    fail_msg: "pipx is required for package_manager_pipx."
+
+- name: Ensure pipx application path is configured
+  ansible.builtin.command: pipx ensurepath
+  register: package_manager_pipx_ensurepath
+  changed_when: "'added' in (package_manager_pipx_ensurepath.stdout | default('')) | lower"
+  failed_when: package_manager_pipx_ensurepath.rc != 0
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin:{{ ansible_facts['env']['HOME'] }}/.local/bin"
+
+- name: Install pipx packages
+  ansible.builtin.command: pipx install {{ pipx_package }}
+  register: package_manager_pipx_install
+  changed_when: >-
+    'installed package' in (package_manager_pipx_install.stdout | default('')) | lower
+  failed_when: package_manager_pipx_install.rc != 0
+  loop: "{{ package_manager_pipx_packages }}"
+  loop_control:
+    loop_var: pipx_package
+  when: package_manager_pipx_packages | length > 0
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin:{{ ansible_facts['env']['HOME'] }}/.local/bin"

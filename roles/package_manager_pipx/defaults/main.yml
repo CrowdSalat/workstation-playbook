@@ -1,0 +1,4 @@
+---
+package_manager_pipx_python: python3
+package_manager_pipx_packages: []
+package_manager_pipx_bootstrap_brew_formula: pipx

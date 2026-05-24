@@ -1,6 +1,7 @@
 # tool_pre_commit
 
-Installs the `pre-commit` CLI for the user.
+Installs the `pre-commit` CLI for the user via `package_manager_pipx` when it is
+not already on `PATH`.
 
 ## Quick start
 

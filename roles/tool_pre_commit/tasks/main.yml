@@ -1,6 +1,13 @@
 ---
-- name: Install pre-commit via pip package manager role
+- name: Check pre-commit availability
+  ansible.builtin.command: command -v pre-commit
+  register: tool_pre_commit_check
+  changed_when: false
+  failed_when: false
+
+- name: Install pre-commit via pipx package manager role
   ansible.builtin.include_role:
-    name: package_manager_pip
+    name: package_manager_pipx
   vars:
-    package_manager_pip_packages: "{{ tool_pre_commit_pip_packages }}"
+    package_manager_pipx_packages: "{{ tool_pre_commit_pipx_packages }}"
+  when: tool_pre_commit_check.rc != 0

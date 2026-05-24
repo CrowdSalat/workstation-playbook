@@ -1,3 +1,3 @@
 ---
-tool_pre_commit_pip_packages:
+tool_pre_commit_pipx_packages:
   - pre-commit
