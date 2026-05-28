@@ -1,0 +1,65 @@
+---
+- name: Ensure dockutil is installed
+  ansible.builtin.include_role:
+    name: package_manager_brew
+  vars:
+    package_manager_brew_formulae:
+      - dockutil
+    package_manager_brew_casks: []
+
+- name: Remove all pinned apps from Dock
+  ansible.builtin.command: dockutil --no-restart --remove all
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+  changed_when: true
+
+- name: Add apps to Dock
+  ansible.builtin.command: dockutil --no-restart --add "{{ item }}"
+  loop: "{{ tool_dock_apps }}"
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+  changed_when: true
+
+- name: Add folders to Dock
+  ansible.builtin.command: >
+    dockutil --no-restart --add "{{ item.path }}"
+    --view {{ item.view }}
+    --display {{ item.display }}
+    --sort {{ item.sort }}
+    --section others
+  loop: "{{ tool_dock_folders }}"
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+  changed_when: true
+
+- name: Set Dock autohide
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: autohide
+    type: bool
+    value: "{{ tool_dock_autohide }}"
+
+- name: Set Dock show recent apps
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: show-recents
+    type: bool
+    value: "{{ tool_dock_show_recents }}"
+
+- name: Set Dock icon size
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: tilesize
+    type: int
+    value: "{{ tool_dock_tilesize }}"
+
+- name: Set Dock magnification
+  community.general.osx_defaults:
+    domain: com.apple.dock
+    key: magnification
+    type: bool
+    value: "{{ tool_dock_magnification }}"
+
+- name: Restart Dock to apply changes
+  ansible.builtin.command: killall Dock
+  changed_when: true

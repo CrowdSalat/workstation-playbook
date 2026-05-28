@@ -1,0 +1,23 @@
+---
+tool_dock_apps:
+  - /System/Library/CoreServices/Finder.app
+  - /Applications/Spotify.app
+  - /Applications/Firefox.app
+  - /Applications/Chromium.app
+  - /Applications/VSCodium.app
+  - /Applications/Cursor.app
+  - /Applications/Ghostty.app
+  - /System/Applications/Notes.app
+  - /System/Applications/FaceTime.app
+  - /System/Applications/System Settings.app
+
+tool_dock_folders:
+  - path: /Applications
+    view: grid
+    display: folder
+    sort: name
+
+tool_dock_autohide: false
+tool_dock_show_recents: false
+tool_dock_tilesize: 48
+tool_dock_magnification: false
