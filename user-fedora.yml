@@ -21,6 +21,7 @@
       - tool_obs_studio
       - tool_browser
       - tool_vscodium
+      - tool_gcp
       - tool_uvcc
       - tool_gnome_extensions
       - config_gnome_shortcuts

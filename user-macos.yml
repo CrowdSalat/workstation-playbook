@@ -20,6 +20,7 @@
       - tool_browser
       - tool_java
       - tool_cli_utils
+      - tool_gcp
       - tool_uvcc
       - tool_vscodium
       - tool_dock

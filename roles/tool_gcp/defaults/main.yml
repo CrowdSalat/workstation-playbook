@@ -1,0 +1,8 @@
+---
+tool_gcp_download_base_url: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads"
+tool_gcp_install_root: "{{ ansible_facts['env']['HOME'] }}/.local"
+tool_gcp_sdk_dir: "{{ tool_gcp_install_root }}/google-cloud-sdk"
+tool_gcp_cache_dir: "{{ ansible_facts['env']['HOME'] }}/.cache/tool_gcp"
+tool_gcp_local_bin: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
+tool_gcp_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+tool_gcp_zshrc: "{{ ansible_facts['env']['HOME'] }}/.zshrc"

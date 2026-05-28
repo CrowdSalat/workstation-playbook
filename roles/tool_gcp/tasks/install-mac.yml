@@ -1,0 +1,117 @@
+---
+- name: Derive Google Cloud CLI architecture for macOS
+  ansible.builtin.set_fact:
+    tool_gcp_arch_id: "{{ tool_gcp_arch_map.get(ansible_facts['architecture'], '') }}"
+  vars:
+    tool_gcp_arch_map:
+      x86_64: x86_64
+      amd64: x86_64
+      arm64: arm
+      aarch64: arm
+
+- name: Ensure macOS architecture is supported for Google Cloud CLI
+  ansible.builtin.assert:
+    that:
+      - tool_gcp_arch_id | length > 0
+    fail_msg: "Unsupported macOS architecture for tool_gcp: {{ ansible_facts['architecture'] }}"
+
+- name: Build Google Cloud CLI download URL for macOS
+  ansible.builtin.set_fact:
+    tool_gcp_archive_name: "google-cloud-cli-darwin-{{ tool_gcp_arch_id }}.tar.gz"
+    tool_gcp_download_url: "{{ tool_gcp_download_base_url }}/google-cloud-cli-darwin-{{ tool_gcp_arch_id }}.tar.gz"
+
+- name: Ensure directories for Google Cloud CLI installation exist
+  ansible.builtin.file:
+    path: "{{ tool_gcp_dir }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ tool_gcp_install_root }}"
+    - "{{ tool_gcp_cache_dir }}"
+    - "{{ tool_gcp_local_bin }}"
+  loop_control:
+    loop_var: tool_gcp_dir
+
+- name: Check if Google Cloud CLI is already installed
+  ansible.builtin.stat:
+    path: "{{ tool_gcp_sdk_dir }}/bin/gcloud"
+  register: tool_gcp_binary
+
+- name: Download Google Cloud CLI archive for macOS
+  ansible.builtin.stat:
+    path: "{{ tool_gcp_cache_dir }}/{{ tool_gcp_archive_name }}"
+  register: tool_gcp_archive_stat
+  when: not tool_gcp_binary.stat.exists
+
+- name: Validate cached Google Cloud CLI archive for macOS
+  ansible.builtin.command: tar -tzf "{{ tool_gcp_cache_dir }}/{{ tool_gcp_archive_name }}"
+  register: tool_gcp_archive_validate
+  changed_when: false
+  failed_when: false
+  when:
+    - not tool_gcp_binary.stat.exists
+    - tool_gcp_archive_stat.stat.exists
+
+- name: Download Google Cloud CLI archive for macOS
+  ansible.builtin.get_url:
+    url: "{{ tool_gcp_download_url }}"
+    dest: "{{ tool_gcp_cache_dir }}/{{ tool_gcp_archive_name }}"
+    mode: "0644"
+    force: true
+  when:
+    - not tool_gcp_binary.stat.exists
+    - (not tool_gcp_archive_stat.stat.exists) or (tool_gcp_archive_validate.rc | default(1)) != 0
+
+- name: Extract Google Cloud CLI archive for macOS
+  ansible.builtin.command:
+    cmd: tar -xzf "{{ tool_gcp_cache_dir }}/{{ tool_gcp_archive_name }}"
+    chdir: "{{ tool_gcp_install_root }}"
+    creates: "{{ tool_gcp_sdk_dir }}/bin/gcloud"
+  when: not tool_gcp_binary.stat.exists
+
+- name: Run Google Cloud CLI installer script for macOS
+  ansible.builtin.command: >-
+    {{ tool_gcp_sdk_dir }}/install.sh
+    --quiet
+    --path-update false
+    --command-completion false
+    --usage-reporting false
+  register: tool_gcp_install_script
+  changed_when: tool_gcp_install_script.rc == 0
+  failed_when: tool_gcp_install_script.rc != 0
+  when: not tool_gcp_binary.stat.exists
+
+- name: Ensure gcloud executable is available from local bin
+  ansible.builtin.file:
+    src: "{{ tool_gcp_sdk_dir }}/bin/gcloud"
+    dest: "{{ tool_gcp_local_bin }}/gcloud"
+    state: link
+    force: true
+
+- name: Enable Google Cloud CLI path and completion in bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_gcp_bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - gcloud"
+    block: |
+      if [ -r "{{ tool_gcp_sdk_dir }}/path.bash.inc" ]; then
+        . "{{ tool_gcp_sdk_dir }}/path.bash.inc"
+      fi
+      if [ -r "{{ tool_gcp_sdk_dir }}/completion.bash.inc" ]; then
+        . "{{ tool_gcp_sdk_dir }}/completion.bash.inc"
+      fi
+    create: true
+    insertafter: EOF
+
+- name: Enable Google Cloud CLI path and completion in zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_gcp_zshrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - gcloud"
+    block: |
+      if [ -r "{{ tool_gcp_sdk_dir }}/path.zsh.inc" ]; then
+        . "{{ tool_gcp_sdk_dir }}/path.zsh.inc"
+      fi
+      if [ -r "{{ tool_gcp_sdk_dir }}/completion.zsh.inc" ]; then
+        . "{{ tool_gcp_sdk_dir }}/completion.zsh.inc"
+      fi
+    create: true
+    insertafter: EOF
