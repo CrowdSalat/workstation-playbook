@@ -50,7 +50,7 @@
   community.general.osx_defaults:
     domain: com.apple.dock
     key: tilesize
-    type: int
+    type: float
     value: "{{ tool_dock_tilesize }}"
 
 - name: Set Dock magnification
