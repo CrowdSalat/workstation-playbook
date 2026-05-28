@@ -108,14 +108,17 @@
     state: directory
     mode: "0755"
 
-- name: Install Bitwarden extension manifest for Chromium (macOS)
+- name: Install Chromium extension manifests (macOS)
   ansible.builtin.copy:
-    dest: "{{ tool_browser_macos_chromium_external_extensions_dir }}/{{ tool_browser_bitwarden_chromium_extension_id }}.json"
+    dest: "{{ tool_browser_macos_chromium_external_extensions_dir }}/{{ chromium_extension.chromium_id }}.json"
     mode: "0644"
     content: |
       {
-        "external_update_url": "{{ tool_browser_bitwarden_chromium_update_url }}"
+        "external_update_url": "{{ chromium_extension.chromium_update_url }}"
       }
+  loop: "{{ tool_browser_chromium_extensions }}"
+  loop_control:
+    loop_var: chromium_extension
 
 - name: Discover Firefox profiles (macOS)
   ansible.builtin.find:
@@ -138,13 +141,25 @@
   loop_control:
     loop_var: firefox_profile
 
-- name: Install Bitwarden extension in Firefox profiles (macOS)
-  ansible.builtin.get_url:
-    url: "{{ tool_browser_bitwarden_firefox_xpi_url }}"
-    dest: "{{ firefox_profile.path }}/extensions/{{ tool_browser_bitwarden_firefox_extension_id }}.xpi"
-    mode: "0644"
+- name: Configure Firefox new-tab preferences (macOS)
+  ansible.builtin.blockinfile:
+    path: "{{ firefox_profile.path }}/user.js"
+    marker: "// {mark} ANSIBLE MANAGED - tool_browser new tab"
+    create: true
+    block: "{{ tool_browser_firefox_user_prefs | join('\n') }}"
+    insertafter: EOF
   loop: "{{ tool_browser_firefox_profiles_macos.files | default([]) }}"
   loop_control:
     loop_var: firefox_profile
+  when: tool_browser_firefox_user_prefs | length > 0
+
+- name: Install Firefox extensions in profiles (macOS)
+  ansible.builtin.get_url:
+    url: "{{ firefox_extension_pair.1.firefox_xpi_url }}"
+    dest: "{{ firefox_extension_pair.0.path }}/extensions/{{ firefox_extension_pair.1.firefox_id }}.xpi"
+    mode: "0644"
+  loop: "{{ (tool_browser_firefox_profiles_macos.files | default([])) | product(tool_browser_firefox_extensions) | list }}"
+  loop_control:
+    loop_var: firefox_extension_pair
   when: not ansible_check_mode
   failed_when: false

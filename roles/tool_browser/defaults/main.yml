@@ -7,13 +7,24 @@ tool_browser_macos_casks:
   - firefox
   - chromium
 
-tool_browser_bitwarden_enabled: true
+tool_browser_extensions:
+  - name: bitwarden
+    chromium_id: nngceckbapebfimnlniiiahkandclblb
+    chromium_update_url: https://clients2.google.com/service/update2/crx
+    firefox_id: "{446900e4-71c2-419f-a6a7-df9c091e268b}"
+    firefox_xpi_url: https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi
+  - name: ublock_origin
+    chromium_id: cjpalhdlnbpafiamejdnhcphjbkeiagm
+    chromium_update_url: https://clients2.google.com/service/update2/crx
+    firefox_id: uBlock0@raymondhill.net
+    firefox_xpi_url: https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi
 
-tool_browser_bitwarden_chromium_extension_id: nngceckbapebfimnlniiiahkandclblb
-tool_browser_bitwarden_chromium_update_url: https://clients2.google.com/service/update2/crx
-
-tool_browser_bitwarden_firefox_extension_id: "{446900e4-71c2-419f-a6a7-df9c091e268b}"
-tool_browser_bitwarden_firefox_xpi_url: https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi
+tool_browser_firefox_user_prefs:
+  - user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+  - user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+  - user_pref("browser.newtabpage.activity-stream.showSponsored", false);
+  - user_pref("browser.newtabpage.activity-stream.feeds.system.topstories", false);
+  - user_pref("browser.newtabpage.activity-stream.feeds.snippets", false);
 
 tool_browser_linux_chromium_external_extensions_dir: "{{ ansible_facts.user_dir }}/.config/chromium/External Extensions"
 tool_browser_macos_chromium_external_extensions_dir: "{{ ansible_facts.user_dir }}/Library/Application Support/Chromium/External Extensions"
@@ -24,3 +35,6 @@ tool_browser_macos_firefox_profiles_dir: "{{ ansible_facts.user_dir }}/Library/A
 tool_browser_macos_chromium_app_paths:
   - /Applications/Chromium.app
   - "{{ ansible_facts.user_dir }}/Applications/Chromium.app"
+
+tool_browser_chromium_extensions: "{{ tool_browser_extensions | selectattr('chromium_id', 'defined') | list }}"
+tool_browser_firefox_extensions: "{{ tool_browser_extensions | selectattr('firefox_id', 'defined') | selectattr('firefox_xpi_url', 'defined') | list }}"

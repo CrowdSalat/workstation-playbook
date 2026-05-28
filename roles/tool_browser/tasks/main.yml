@@ -11,10 +11,10 @@
   ansible.builtin.include_tasks: postinstall-linux.yml
   when:
     - ansible_facts["system"] == "Linux"
-    - tool_browser_bitwarden_enabled | bool
+    - tool_browser_extensions | length > 0 or tool_browser_firefox_user_prefs | length > 0
 
 - name: Configure browser postinstall on macOS
   ansible.builtin.include_tasks: postinstall-mac.yml
   when:
     - ansible_facts["system"] == "Darwin"
-    - tool_browser_bitwarden_enabled | bool
+    - tool_browser_extensions | length > 0 or tool_browser_firefox_user_prefs | length > 0
