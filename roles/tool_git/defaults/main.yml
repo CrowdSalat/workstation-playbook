@@ -5,3 +5,10 @@ tool_git_default_branch: "main"
 
 tool_git_enable_ssh_signing: true
 tool_git_signing_key: "{{ ansible_facts['env']['HOME'] }}/.ssh/{{ workstation_ssh_identity | default('id_ed25519') }}.pub"
+tool_git_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+tool_git_zshrc: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+tool_git_completion_candidates:
+  - /opt/homebrew/etc/bash_completion.d/git-completion.bash
+  - /usr/local/etc/bash_completion.d/git-completion.bash
+  - /usr/share/bash-completion/completions/git
+  - /etc/bash_completion.d/git

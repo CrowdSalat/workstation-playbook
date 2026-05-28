@@ -37,3 +37,36 @@
   when:
     - tool_git_enable_ssh_signing | bool
     - tool_git_signing_key | length > 0
+
+- name: Enable git completion in bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_git_bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - git completion"
+    block: |
+      for _git_completion in {{ tool_git_completion_candidates | map('quote') | join(' ') }}; do
+        if [ -r "${_git_completion}" ]; then
+          . "${_git_completion}"
+          break
+        fi
+      done
+      unset _git_completion
+    create: true
+    insertafter: EOF
+
+- name: Enable git completion in zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_git_zshrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - git completion"
+    block: |
+      autoload -Uz compinit bashcompinit
+      compinit
+      bashcompinit
+      for _git_completion in {{ tool_git_completion_candidates | map('quote') | join(' ') }}; do
+        if [ -r "${_git_completion}" ]; then
+          . "${_git_completion}"
+          break
+        fi
+      done
+      unset _git_completion
+    create: true
+    insertafter: EOF
