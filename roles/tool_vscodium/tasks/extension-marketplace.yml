@@ -1,0 +1,24 @@
+---
+- name: Download VSIX from Visual Studio Marketplace
+  ansible.builtin.get_url:
+    url: >-
+      https://marketplace.visualstudio.com/_apis/public/gallery/publishers/{{
+      ext_item.marketplace.publisher }}/vsextensions/{{ ext_item.marketplace.extension }}/{{
+      ext_item.marketplace.version }}/vspackage
+    dest: >-
+      {{ tool_vscodium_vsix_cache_dir }}/{{ ext_item.marketplace.publisher }}.{{
+      ext_item.marketplace.extension }}-{{ ext_item.marketplace.version }}.vsix
+    mode: "0644"
+    force: true
+
+- name: Install VSCodium extension from Marketplace VSIX
+  ansible.builtin.command:
+    argv: >-
+      {{ tool_vscodium_extension_install_argv + [tool_vscodium_vsix_cache_dir ~ '/' ~
+      ext_item.marketplace.publisher ~ '.' ~ ext_item.marketplace.extension ~ '-' ~
+      ext_item.marketplace.version ~ '.vsix'] }}
+  register: tool_vscodium_ext_vsix_msvc
+  changed_when: >-
+    'already installed' not in
+    ((tool_vscodium_ext_vsix_msvc.stdout | default('')) ~ (tool_vscodium_ext_vsix_msvc.stderr | default(''))) | lower
+  failed_when: tool_vscodium_ext_vsix_msvc.rc != 0
