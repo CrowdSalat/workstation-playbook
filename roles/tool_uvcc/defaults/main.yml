@@ -1,0 +1,4 @@
+---
+tool_uvcc_node_version: "lts/*"
+tool_uvcc_npm_packages:
+  - uvcc

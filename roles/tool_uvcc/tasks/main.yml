@@ -1,0 +1,14 @@
+---
+- name: Check uvcc availability
+  ansible.builtin.command: command -v uvcc
+  register: tool_uvcc_check
+  changed_when: false
+  failed_when: false
+
+- name: Install uvcc globally via npm package manager role
+  ansible.builtin.include_role:
+    name: package_manager_npm
+  vars:
+    package_manager_npm_node_version: "{{ tool_uvcc_node_version }}"
+    package_manager_npm_packages: "{{ tool_uvcc_npm_packages }}"
+  when: tool_uvcc_check.rc != 0
