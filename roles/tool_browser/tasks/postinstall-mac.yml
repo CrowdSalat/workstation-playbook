@@ -1,0 +1,150 @@
+---
+- name: Detect Chromium app bundles on macOS
+  ansible.builtin.stat:
+    path: "{{ chromium_app_path }}"
+  loop: "{{ tool_browser_macos_chromium_app_paths }}"
+  loop_control:
+    loop_var: chromium_app_path
+  register: tool_browser_macos_chromium_app_stats
+  changed_when: false
+
+- name: Resolve Chromium app path on macOS
+  ansible.builtin.set_fact:
+    tool_browser_macos_chromium_app_path: >-
+      {{
+        (tool_browser_macos_chromium_app_stats.results
+        | selectattr('stat.exists')
+        | map(attribute='stat.path')
+        | list
+        | first) | default('')
+      }}
+  changed_when: false
+
+- name: Verify Chromium app signature on macOS
+  ansible.builtin.command:
+    argv:
+      - codesign
+      - --verify
+      - --deep
+      - --strict
+      - --verbose=2
+      - "{{ tool_browser_macos_chromium_app_path }}"
+  register: tool_browser_macos_chromium_signature_check
+  changed_when: false
+  failed_when: false
+  when:
+    - not ansible_check_mode
+    - tool_browser_macos_chromium_app_path | length > 0
+
+- name: Uninstall broken Chromium cask on macOS
+  community.general.homebrew_cask:
+    name: chromium
+    state: absent
+    accept_external_apps: true
+  when:
+    - not ansible_check_mode
+    - tool_browser_macos_chromium_signature_check is defined
+    - tool_browser_macos_chromium_signature_check.rc != 0
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+
+- name: Reinstall Chromium cask on macOS
+  community.general.homebrew_cask:
+    name: chromium
+    state: present
+    accept_external_apps: true
+  when:
+    - not ansible_check_mode
+    - tool_browser_macos_chromium_signature_check is defined
+    - tool_browser_macos_chromium_signature_check.rc != 0
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+
+- name: Refresh Chromium app bundle detection after reinstall
+  ansible.builtin.stat:
+    path: "{{ chromium_app_path }}"
+  loop: "{{ tool_browser_macos_chromium_app_paths }}"
+  loop_control:
+    loop_var: chromium_app_path
+  register: tool_browser_macos_chromium_app_stats
+  changed_when: false
+  when:
+    - not ansible_check_mode
+    - tool_browser_macos_chromium_signature_check is defined
+    - tool_browser_macos_chromium_signature_check.rc != 0
+
+- name: Check quarantine attribute on Chromium app bundle (macOS)
+  ansible.builtin.command:
+    argv:
+      - xattr
+      - -p
+      - com.apple.quarantine
+      - "{{ chromium_app.stat.path }}"
+  loop: "{{ tool_browser_macos_chromium_app_stats.results | default([]) }}"
+  loop_control:
+    loop_var: chromium_app
+  when: chromium_app.stat.exists | default(false)
+  register: tool_browser_macos_chromium_quarantine_checks
+  changed_when: false
+  failed_when: false
+
+- name: Remove quarantine attribute from Chromium app bundle (macOS)
+  ansible.builtin.command:
+    argv:
+      - xattr
+      - -dr
+      - com.apple.quarantine
+      - "{{ chromium_quarantine_check.chromium_app.stat.path }}"
+  loop: "{{ tool_browser_macos_chromium_quarantine_checks.results | default([]) }}"
+  loop_control:
+    loop_var: chromium_quarantine_check
+  when:
+    - chromium_quarantine_check.rc is defined
+    - chromium_quarantine_check.rc == 0
+
+- name: Ensure Chromium external extension directory exists (macOS)
+  ansible.builtin.file:
+    path: "{{ tool_browser_macos_chromium_external_extensions_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Bitwarden extension manifest for Chromium (macOS)
+  ansible.builtin.copy:
+    dest: "{{ tool_browser_macos_chromium_external_extensions_dir }}/{{ tool_browser_bitwarden_chromium_extension_id }}.json"
+    mode: "0644"
+    content: |
+      {
+        "external_update_url": "{{ tool_browser_bitwarden_chromium_update_url }}"
+      }
+
+- name: Discover Firefox profiles (macOS)
+  ansible.builtin.find:
+    paths: "{{ tool_browser_macos_firefox_profiles_dir }}"
+    file_type: directory
+    patterns:
+      - "*.default*"
+      - "*.default-release*"
+    use_regex: false
+  register: tool_browser_firefox_profiles_macos
+  failed_when: false
+  changed_when: false
+
+- name: Ensure Firefox extension directory exists in each profile (macOS)
+  ansible.builtin.file:
+    path: "{{ firefox_profile.path }}/extensions"
+    state: directory
+    mode: "0755"
+  loop: "{{ tool_browser_firefox_profiles_macos.files | default([]) }}"
+  loop_control:
+    loop_var: firefox_profile
+
+- name: Install Bitwarden extension in Firefox profiles (macOS)
+  ansible.builtin.get_url:
+    url: "{{ tool_browser_bitwarden_firefox_xpi_url }}"
+    dest: "{{ firefox_profile.path }}/extensions/{{ tool_browser_bitwarden_firefox_extension_id }}.xpi"
+    mode: "0644"
+  loop: "{{ tool_browser_firefox_profiles_macos.files | default([]) }}"
+  loop_control:
+    loop_var: firefox_profile
+  when: not ansible_check_mode
+  failed_when: false

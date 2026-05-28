@@ -6,3 +6,21 @@ tool_browser_linux_flatpak_ids:
 tool_browser_macos_casks:
   - firefox
   - chromium
+
+tool_browser_bitwarden_enabled: true
+
+tool_browser_bitwarden_chromium_extension_id: nngceckbapebfimnlniiiahkandclblb
+tool_browser_bitwarden_chromium_update_url: https://clients2.google.com/service/update2/crx
+
+tool_browser_bitwarden_firefox_extension_id: "{446900e4-71c2-419f-a6a7-df9c091e268b}"
+tool_browser_bitwarden_firefox_xpi_url: https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi
+
+tool_browser_linux_chromium_external_extensions_dir: "{{ ansible_facts.user_dir }}/.config/chromium/External Extensions"
+tool_browser_macos_chromium_external_extensions_dir: "{{ ansible_facts.user_dir }}/Library/Application Support/Chromium/External Extensions"
+
+tool_browser_linux_firefox_profiles_dir: "{{ ansible_facts.user_dir }}/.var/app/org.mozilla.firefox/.mozilla/firefox"
+tool_browser_macos_firefox_profiles_dir: "{{ ansible_facts.user_dir }}/Library/Application Support/Firefox/Profiles"
+
+tool_browser_macos_chromium_app_paths:
+  - /Applications/Chromium.app
+  - "{{ ansible_facts.user_dir }}/Applications/Chromium.app"

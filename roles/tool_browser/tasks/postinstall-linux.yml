@@ -1,0 +1,47 @@
+---
+- name: Ensure Chromium external extension directory exists (Linux)
+  ansible.builtin.file:
+    path: "{{ tool_browser_linux_chromium_external_extensions_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Bitwarden extension manifest for Chromium (Linux)
+  ansible.builtin.copy:
+    dest: "{{ tool_browser_linux_chromium_external_extensions_dir }}/{{ tool_browser_bitwarden_chromium_extension_id }}.json"
+    mode: "0644"
+    content: |
+      {
+        "external_update_url": "{{ tool_browser_bitwarden_chromium_update_url }}"
+      }
+
+- name: Discover Firefox profiles (Linux)
+  ansible.builtin.find:
+    paths: "{{ tool_browser_linux_firefox_profiles_dir }}"
+    file_type: directory
+    patterns:
+      - "*.default*"
+      - "*.default-release*"
+    use_regex: false
+  register: tool_browser_firefox_profiles_linux
+  failed_when: false
+  changed_when: false
+
+- name: Ensure Firefox extension directory exists in each profile (Linux)
+  ansible.builtin.file:
+    path: "{{ firefox_profile.path }}/extensions"
+    state: directory
+    mode: "0755"
+  loop: "{{ tool_browser_firefox_profiles_linux.files | default([]) }}"
+  loop_control:
+    loop_var: firefox_profile
+
+- name: Install Bitwarden extension in Firefox profiles (Linux)
+  ansible.builtin.get_url:
+    url: "{{ tool_browser_bitwarden_firefox_xpi_url }}"
+    dest: "{{ firefox_profile.path }}/extensions/{{ tool_browser_bitwarden_firefox_extension_id }}.xpi"
+    mode: "0644"
+  loop: "{{ tool_browser_firefox_profiles_linux.files | default([]) }}"
+  loop_control:
+    loop_var: firefox_profile
+  when: not ansible_check_mode
+  failed_when: false
