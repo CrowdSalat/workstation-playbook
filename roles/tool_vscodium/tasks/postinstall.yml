@@ -6,8 +6,12 @@
 - name: Optionally add Ghostty as VSCodium external terminal
   ansible.builtin.set_fact:
     tool_vscodium_terminal_json: >-
-      {{ (tool_vscodium_terminal_json | from_json) |
-         combine((tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux) | from_json) |
+      {{ (tool_vscodium_terminal_json if tool_vscodium_terminal_json is mapping else (tool_vscodium_terminal_json | from_json)) |
+         combine(
+           (tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux)
+           if (tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux) is mapping
+           else ((tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux) | from_json)
+         ) |
          to_nice_json }}
   when: >-
     'tool_ghostty' in (

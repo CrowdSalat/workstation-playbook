@@ -31,6 +31,21 @@
     insertafter: EOF
   when: tool_ssh_agent_enabled | bool
 
+- name: Add SSH agent snippet to zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_ssh_agent_zshrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - ssh_agent"
+    block: |
+      # Prefer existing agent; else use keychain for shell sessions.
+      if [ -n "${SSH_AUTH_SOCK:-}" ] && [ -S "${SSH_AUTH_SOCK}" ]; then
+        :
+      elif command -v keychain >/dev/null 2>&1; then
+        eval "$({{ tool_ssh_agent_local_bin }}/keychain --eval --quiet {{ tool_ssh_agent_identities | join(' ') }})"
+      fi
+    create: true
+    insertafter: EOF
+  when: tool_ssh_agent_enabled | bool
+
 - name: Ensure .ssh directory exists
   ansible.builtin.file:
     path: "{{ ansible_facts['env']['HOME'] }}/.ssh"

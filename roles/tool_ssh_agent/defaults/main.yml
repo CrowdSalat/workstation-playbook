@@ -8,3 +8,4 @@ tool_ssh_agent_identities:
 tool_ssh_agent_manage_ssh_config: true
 tool_ssh_agent_local_bin: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
 tool_ssh_agent_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+tool_ssh_agent_zshrc: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
