@@ -70,6 +70,7 @@
   community.general.homebrew_cask:
     name: "{{ package_manager_brew_casks }}"
     state: present
+    accept_external_apps: true
   when: package_manager_brew_casks | length > 0
   environment:
     PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"

@@ -7,3 +7,6 @@ package_manager_sdkman_items: []
 # Optional defaults to set after installation.
 # Same format as package_manager_sdkman_items.
 package_manager_sdkman_defaults: []
+
+package_manager_sdkman_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+package_manager_sdkman_zshrc: "{{ ansible_facts['env']['HOME'] }}/.zshrc"

@@ -61,7 +61,7 @@ conditions, split that phase into platform files and include them directly from
   - `package_manager_flatpak`: check presence, then configure remote and install packages
   - `package_manager_brew`: bootstrap Homebrew when missing, apply shellenv setup, then install packages
   - `package_manager_rpm_ostree`: check presence, configure COPR repos, then layer packages and report reboot need
-  - `package_manager_sdkman`: bootstrap SDKMAN when missing, ensure `.bashrc` init block, then install candidates
+  - `package_manager_sdkman`: bootstrap SDKMAN when missing, ensure shell init blocks (`.bashrc` and `.zshrc`), then install candidates
   - `package_manager_pipx`: bootstrap pipx when missing, ensure application path, then install packages
 - Tool roles may call package manager roles repeatedly; this is acceptable for
   readability.

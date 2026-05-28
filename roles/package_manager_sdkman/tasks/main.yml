@@ -1,11 +1,16 @@
 ---
+- name: Select shell executable for SDKMAN commands
+  ansible.builtin.set_fact:
+    package_manager_sdkman_shell_executable: >-
+      {{ '/bin/zsh' if ansible_facts["system"] == "Darwin" else '/bin/bash' }}
+
 - name: Check SDKMAN installation
   ansible.builtin.stat:
     path: "{{ ansible_facts['env']['HOME'] }}/.sdkman/bin/sdkman-init.sh"
   register: package_manager_sdkman_init
 
 - name: Install SDKMAN when missing
-  ansible.builtin.shell: curl -s "https://get.sdkman.io" | bash
+  ansible.builtin.shell: curl -s "https://get.sdkman.io" | "$0"
   when: not package_manager_sdkman_init.stat.exists
   register: package_manager_sdkman_bootstrap
   changed_when: package_manager_sdkman_bootstrap.rc == 0
@@ -14,7 +19,7 @@
     HOME: "{{ ansible_facts['env']['HOME'] }}"
     SDKMAN_DIR: "{{ ansible_facts['env']['HOME'] }}/.sdkman"
   args:
-    executable: /bin/bash
+    executable: "{{ package_manager_sdkman_shell_executable }}"
     creates: "{{ ansible_facts['env']['HOME'] }}/.sdkman/bin/sdkman-init.sh"
 
 - name: Re-check SDKMAN installation
@@ -30,7 +35,17 @@
 
 - name: Ensure SDKMAN init is present in bashrc
   ansible.builtin.blockinfile:
-    path: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+    path: "{{ package_manager_sdkman_bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - sdkman"
+    block: |
+      export SDKMAN_DIR="$HOME/.sdkman"
+      [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+    create: true
+    insertafter: EOF
+
+- name: Ensure SDKMAN init is present in zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ package_manager_sdkman_zshrc }}"
     marker: "# {mark} ANSIBLE MANAGED - sdkman"
     block: |
       export SDKMAN_DIR="$HOME/.sdkman"
@@ -69,7 +84,7 @@
   register: package_manager_sdkman_install_results
   changed_when: "'CHANGED' in (stdout | default(''))"
   args:
-    executable: /bin/bash
+    executable: "{{ package_manager_sdkman_shell_executable }}"
 
 - name: Set SDKMAN defaults
   ansible.builtin.shell: |
@@ -99,4 +114,4 @@
   register: package_manager_sdkman_default_results
   changed_when: "'CHANGED' in (stdout | default(''))"
   args:
-    executable: /bin/bash
+    executable: "{{ package_manager_sdkman_shell_executable }}"
