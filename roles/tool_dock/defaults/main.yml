@@ -1,6 +1,6 @@
 ---
 tool_dock_apps:
-  - /System/Library/CoreServices/Finder.app
+  - /System/Applications/Apps.app
   - /Applications/Spotify.app
   - /Applications/Firefox.app
   - /Applications/Chromium.app
