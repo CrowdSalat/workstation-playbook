@@ -23,6 +23,16 @@
     value: "true"
     scope: global
 
+- name: Configure common git aliases
+  ansible.builtin.git_config:
+    name: "alias.{{ git_alias.name }}"
+    value: "{{ git_alias.value }}"
+    scope: global
+  loop: "{{ tool_git_aliases }}"
+  loop_control:
+    loop_var: git_alias
+  when: tool_git_aliases | length > 0
+
 - name: Enable SSH signing for commits
   ansible.builtin.git_config:
     name: "{{ git_setting.name }}"
