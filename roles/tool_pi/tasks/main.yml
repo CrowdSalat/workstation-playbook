@@ -12,3 +12,21 @@
     package_manager_npm_node_version: "{{ tool_pi_node_version }}"
     package_manager_npm_packages: "{{ tool_pi_npm_packages }}"
   when: tool_pi_check.rc != 0
+
+- name: "Install pi extension: {{ pi_extension }}"
+  ansible.builtin.shell: |
+    set -eo pipefail
+    if pi list 2>/dev/null | rg -F -- "{{ pi_extension }}" >/dev/null; then
+      echo NOCHANGE
+    else
+      pi install "{{ pi_extension }}"
+      echo CHANGED
+    fi
+  loop: "{{ tool_pi_extensions }}"
+  loop_control:
+    loop_var: pi_extension
+  register: tool_pi_extension_install
+  changed_when: "'CHANGED' in (stdout | default(''))"
+  when: tool_pi_extensions | length > 0
+  args:
+    executable: /bin/bash
