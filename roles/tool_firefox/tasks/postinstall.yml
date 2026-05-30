@@ -1,0 +1,44 @@
+---
+- name: Discover Firefox profiles
+  ansible.builtin.find:
+    paths: "{{ tool_firefox_profiles_dir }}"
+    file_type: directory
+    patterns:
+      - "*.default*"
+      - "*.default-release*"
+    use_regex: false
+  register: tool_firefox_profiles
+  failed_when: false
+  changed_when: false
+
+- name: Ensure Firefox extension directory exists in each profile
+  ansible.builtin.file:
+    path: "{{ firefox_profile.path }}/extensions"
+    state: directory
+    mode: "0755"
+  loop: "{{ tool_firefox_profiles.files | default([]) }}"
+  loop_control:
+    loop_var: firefox_profile
+
+- name: Configure Firefox new-tab preferences
+  ansible.builtin.blockinfile:
+    path: "{{ firefox_profile.path }}/user.js"
+    marker: "// {mark} ANSIBLE MANAGED - tool_firefox new tab"
+    create: true
+    block: "{{ tool_firefox_user_prefs | join('\n') }}"
+    insertafter: EOF
+  loop: "{{ tool_firefox_profiles.files | default([]) }}"
+  loop_control:
+    loop_var: firefox_profile
+  when: tool_firefox_user_prefs | length > 0
+
+- name: Install Firefox extensions in profiles
+  ansible.builtin.get_url:
+    url: "{{ firefox_extension_pair.1.firefox_xpi_url }}"
+    dest: "{{ firefox_extension_pair.0.path }}/extensions/{{ firefox_extension_pair.1.firefox_id }}.xpi"
+    mode: "0644"
+  loop: "{{ (tool_firefox_profiles.files | default([])) | product(tool_firefox_extensions) | list }}"
+  loop_control:
+    loop_var: firefox_extension_pair
+  when: not ansible_check_mode
+  failed_when: false

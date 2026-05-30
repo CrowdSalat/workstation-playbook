@@ -13,6 +13,7 @@
       - tool_pre_commit
       - tool_claude_code
       - tool_opencode
+      - tool_pi
       - config_alias
       - tool_starship
       - tool_ghostty
@@ -21,7 +22,8 @@
       - tool_flatseal
       - tool_obsidian
       - tool_obs_studio
-      - tool_browser
+      - tool_firefox
+      - tool_chromium
       - tool_vscodium
       - tool_gcp
       - tool_uvcc

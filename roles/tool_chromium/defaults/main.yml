@@ -1,0 +1,21 @@
+---
+tool_chromium_linux_flatpak_ids:
+  - org.chromium.Chromium
+
+tool_chromium_macos_casks:
+  - chromium
+
+tool_chromium_extensions:
+  - name: bitwarden
+    chromium_id: nngceckbapebfimnlniiiahkandclblb
+    chromium_update_url: https://clients2.google.com/service/update2/crx
+  - name: ublock_origin
+    chromium_id: cjpalhdlnbpafiamejdnhcphjbkeiagm
+    chromium_update_url: https://clients2.google.com/service/update2/crx
+
+tool_chromium_linux_external_extensions_dir: "{{ ansible_facts.user_dir }}/.config/chromium/External Extensions"
+tool_chromium_macos_external_extensions_dir: "{{ ansible_facts.user_dir }}/Library/Application Support/Chromium/External Extensions"
+
+tool_chromium_macos_app_paths:
+  - /Applications/Chromium.app
+  - "{{ ansible_facts.user_dir }}/Applications/Chromium.app"

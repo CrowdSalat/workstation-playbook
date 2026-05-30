@@ -1,6 +1,0 @@
----
-- name: Install browsers via Flatpak package manager role
-  ansible.builtin.include_role:
-    name: package_manager_flatpak
-  vars:
-    package_manager_flatpak_packages: "{{ tool_browser_linux_flatpak_ids }}"

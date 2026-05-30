@@ -1,20 +1,20 @@
 ---
-- name: Install browsers on Linux
+- name: Install Chromium on Linux
   ansible.builtin.include_tasks: install-linux.yml
   when: ansible_facts["system"] == "Linux"
 
-- name: Install browsers on macOS
+- name: Install Chromium on macOS
   ansible.builtin.include_tasks: install-mac.yml
   when: ansible_facts["system"] == "Darwin"
 
-- name: Configure browser postinstall on Linux
+- name: Configure Chromium postinstall on Linux
   ansible.builtin.include_tasks: postinstall-linux.yml
   when:
     - ansible_facts["system"] == "Linux"
-    - tool_browser_extensions | length > 0 or tool_browser_firefox_user_prefs | length > 0
+    - tool_chromium_extensions | length > 0
 
-- name: Configure browser postinstall on macOS
+- name: Configure Chromium postinstall on macOS
   ansible.builtin.include_tasks: postinstall-mac.yml
   when:
     - ansible_facts["system"] == "Darwin"
-    - tool_browser_extensions | length > 0 or tool_browser_firefox_user_prefs | length > 0
+    - tool_chromium_extensions | length > 0

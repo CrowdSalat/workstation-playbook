@@ -1,0 +1,6 @@
+---
+- name: Install Chromium via Flatpak package manager role
+  ansible.builtin.include_role:
+    name: package_manager_flatpak
+  vars:
+    package_manager_flatpak_packages: "{{ tool_chromium_linux_flatpak_ids }}"

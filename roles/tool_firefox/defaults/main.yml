@@ -1,0 +1,28 @@
+---
+tool_firefox_linux_flatpak_ids:
+  - org.mozilla.firefox
+
+tool_firefox_macos_casks:
+  - firefox
+
+tool_firefox_extensions:
+  - name: bitwarden
+    firefox_id: "{446900e4-71c2-419f-a6a7-df9c091e268b}"
+    firefox_xpi_url: https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi
+  - name: ublock_origin
+    firefox_id: uBlock0@raymondhill.net
+    firefox_xpi_url: https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi
+
+tool_firefox_user_prefs:
+  - user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+  - user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+  - user_pref("browser.newtabpage.activity-stream.showSponsored", false);
+  - user_pref("browser.newtabpage.activity-stream.feeds.system.topstories", false);
+  - user_pref("browser.newtabpage.activity-stream.feeds.snippets", false);
+
+tool_firefox_linux_profiles_dir: "{{ ansible_facts.user_dir }}/.var/app/org.mozilla.firefox/.mozilla/firefox"
+tool_firefox_macos_profiles_dir: "{{ ansible_facts.user_dir }}/Library/Application Support/Firefox/Profiles"
+tool_firefox_profiles_dir_by_system:
+  Linux: "{{ tool_firefox_linux_profiles_dir }}"
+  Darwin: "{{ tool_firefox_macos_profiles_dir }}"
+tool_firefox_profiles_dir: "{{ tool_firefox_profiles_dir_by_system.get(ansible_facts['system'], '') }}"

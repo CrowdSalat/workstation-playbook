@@ -1,0 +1,36 @@
+---
+- name: Install Chromium cask on macOS
+  block:
+    - name: Install Chromium via Homebrew cask
+      community.general.homebrew_cask:
+        name: chromium
+        state: present
+        accept_external_apps: true
+      environment:
+        PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+  rescue:
+    - name: Find cached Chromium zip archives in Homebrew cache
+      ansible.builtin.find:
+        paths: "{{ ansible_facts['env']['HOME'] }}/Library/Caches/Homebrew/downloads"
+        patterns:
+          - "*chrome-mac*.zip"
+        file_type: file
+      register: tool_chromium_macos_cached_zips
+      changed_when: false
+      failed_when: false
+
+    - name: Remove cached Chromium zip archives before retry
+      ansible.builtin.file:
+        path: "{{ chromium_cached_zip.path }}"
+        state: absent
+      loop: "{{ tool_chromium_macos_cached_zips.files | default([]) }}"
+      loop_control:
+        loop_var: chromium_cached_zip
+
+    - name: Retry Chromium install via Homebrew cask after cache cleanup
+      community.general.homebrew_cask:
+        name: chromium
+        state: present
+        accept_external_apps: true
+      environment:
+        PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"

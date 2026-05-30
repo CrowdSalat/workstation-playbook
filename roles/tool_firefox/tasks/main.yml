@@ -1,0 +1,20 @@
+---
+- name: Install Firefox on Linux
+  ansible.builtin.include_tasks: install-linux.yml
+  when: ansible_facts["system"] == "Linux"
+
+- name: Install Firefox on macOS
+  ansible.builtin.include_tasks: install-mac.yml
+  when: ansible_facts["system"] == "Darwin"
+
+- name: Configure Firefox postinstall on Linux
+  ansible.builtin.include_tasks: postinstall.yml
+  when:
+    - ansible_facts["system"] == "Linux"
+    - tool_firefox_extensions | length > 0 or tool_firefox_user_prefs | length > 0
+
+- name: Configure Firefox postinstall on macOS
+  ansible.builtin.include_tasks: postinstall.yml
+  when:
+    - ansible_facts["system"] == "Darwin"
+    - tool_firefox_extensions | length > 0 or tool_firefox_user_prefs | length > 0
