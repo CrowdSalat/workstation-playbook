@@ -5,21 +5,3 @@
   vars:
     package_manager_brew_formulae:
       - starship
-
-- name: Initialize Starship in bashrc
-  ansible.builtin.blockinfile:
-    path: "{{ tool_starship_bashrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - starship"
-    block: |
-      [[ "$TERM" != "dumb" ]] && eval "$(starship init bash)"
-    create: true
-    insertafter: EOF
-
-- name: Initialize Starship in zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ tool_starship_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - starship"
-    block: |
-      [[ "$TERM" != "dumb" ]] && eval "$(starship init zsh)"
-    create: true
-    insertafter: EOF

@@ -6,3 +6,12 @@
 - name: Install Starship on macOS
   ansible.builtin.include_tasks: install-mac.yml
   when: ansible_facts["system"] == "Darwin"
+
+- name: Select Starship command for shell init
+  ansible.builtin.set_fact:
+    tool_starship_init_command: >-
+      {{ tool_starship_local_bin ~ '/starship' if ansible_facts["system"] == "Linux" else 'starship' }}
+
+- name: Run shared Starship postinstall tasks
+  ansible.builtin.include_tasks: postinstall.yml
+  when: ansible_facts["system"] in ["Linux", "Darwin"]

@@ -24,21 +24,3 @@
   ansible.builtin.file:
     path: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
     state: absent
-
-- name: Initialize Starship in bashrc
-  ansible.builtin.blockinfile:
-    path: "{{ tool_starship_bashrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - starship"
-    block: |
-      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_local_bin }}/starship init bash)"
-    create: true
-    insertafter: EOF
-
-- name: Initialize Starship in zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ tool_starship_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - starship"
-    block: |
-      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_local_bin }}/starship init zsh)"
-    create: true
-    insertafter: EOF

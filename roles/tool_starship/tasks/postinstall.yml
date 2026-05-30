@@ -1,0 +1,32 @@
+---
+- name: Ensure Starship config directory exists
+  ansible.builtin.file:
+    path: "{{ tool_starship_config_dir }}"
+    state: directory
+    mode: "0755"
+  when: tool_starship_manage_config
+
+- name: Manage Starship prompt config
+  ansible.builtin.copy:
+    dest: "{{ tool_starship_config_path }}"
+    content: "{{ tool_starship_config | trim ~ '\n' }}"
+    mode: "0644"
+  when: tool_starship_manage_config
+
+- name: Initialize Starship in bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_starship_bashrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - starship"
+    block: |
+      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_init_command }} init bash)"
+    create: true
+    insertafter: EOF
+
+- name: Initialize Starship in zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ tool_starship_zshrc }}"
+    marker: "# {mark} ANSIBLE MANAGED - starship"
+    block: |
+      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_init_command }} init zsh)"
+    create: true
+    insertafter: EOF

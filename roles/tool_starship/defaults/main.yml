@@ -4,3 +4,10 @@ tool_starship_url: "https://github.com/starship/starship/releases/download/v{{ t
 tool_starship_local_bin: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
 tool_starship_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
 tool_starship_zshrc: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+tool_starship_config_dir: "{{ ansible_facts['env']['HOME'] }}/.config"
+tool_starship_config_path: "{{ tool_starship_config_dir }}/starship.toml"
+tool_starship_manage_config: true
+# Full starship.toml content. Override this multiline string per host/group/playbook.
+tool_starship_config: |
+  [gcloud]
+  disabled = true
