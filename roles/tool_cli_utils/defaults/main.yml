@@ -3,8 +3,12 @@ tool_cli_utils_linux_dnf_packages:
   - jq
   - yq
   - tree
+  - ripgrep
+  - fd-find
 
 tool_cli_utils_macos_brew_formulae:
   - jq
   - yq
   - tree
+  - ripgrep
+  - fd
