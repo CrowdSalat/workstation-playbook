@@ -36,7 +36,7 @@
       - package_manager_pip_check_after.rc == 0
     fail_msg: "pip is unavailable for {{ package_manager_pip_python }} after ensurepip bootstrap attempt."
 
-- name: Install pip packages
+- name: "Install pip package: {{ pip_package }}"
   ansible.builtin.command: >-
     {{ package_manager_pip_python }} -m pip install
     {{ '--user' if package_manager_pip_user else '' }}

@@ -19,9 +19,10 @@
   loop: "{{ package_manager_rpm_ostree_packages | selectattr('copr', 'defined') | list }}"
   loop_control:
     loop_var: rpm_pkg
+    label: "{{ rpm_pkg.copr }}"
   become: true
 
-- name: Layer rpm-ostree packages
+- name: "Layer rpm-ostree packages: {{ package_manager_rpm_ostree_packages | map(attribute='name') | join(', ') }}"
   ansible.builtin.command:
     cmd: "rpm-ostree install --idempotent --allow-inactive {{ package_manager_rpm_ostree_packages | map(attribute='name') | join(' ') }}"
   register: package_manager_rpm_ostree_result

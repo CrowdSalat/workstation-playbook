@@ -11,7 +11,7 @@
       - package_manager_dnf_check.rc == 0
     fail_msg: "dnf is required for package_manager_dnf."
 
-- name: Install dnf packages
+- name: "Install dnf packages: {{ package_manager_dnf_packages | join(', ') }}"
   ansible.builtin.command: >
     sudo dnf install -y {{ package_manager_dnf_packages | join(' ') }}
   register: package_manager_dnf_install

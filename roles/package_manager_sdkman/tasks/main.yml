@@ -53,7 +53,7 @@
     create: true
     insertafter: EOF
 
-- name: Install SDKMAN items
+- name: "Install SDKMAN item: {{ item }}"
   ansible.builtin.shell: |
     set -eo pipefail
     export HOME="{{ ansible_facts['env']['HOME'] }}"
@@ -86,7 +86,7 @@
   args:
     executable: "{{ package_manager_sdkman_shell_executable }}"
 
-- name: Set SDKMAN defaults
+- name: "Set SDKMAN default: {{ item }}"
   ansible.builtin.shell: |
     set -eo pipefail
     export HOME="{{ ansible_facts['env']['HOME'] }}"

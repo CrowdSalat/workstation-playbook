@@ -56,7 +56,7 @@
   args:
     executable: /bin/bash
 
-- name: Install npm global packages
+- name: "Install npm global package: {{ npm_pkg }}"
   ansible.builtin.shell: |
     set -eo pipefail
     export HOME="{{ ansible_facts['env']['HOME'] }}"

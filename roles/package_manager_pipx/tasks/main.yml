@@ -47,7 +47,7 @@
   environment:
     PATH: "{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin:{{ ansible_facts['env']['HOME'] }}/.local/bin"
 
-- name: Install pipx packages
+- name: "Install pipx package: {{ pipx_package }}"
   ansible.builtin.command: pipx install {{ pipx_package }}
   register: package_manager_pipx_install
   changed_when: >-

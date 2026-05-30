@@ -19,7 +19,7 @@
     state: present
   when: package_manager_flatpak_packages | length > 0
 
-- name: Install Flatpak packages
+- name: "Install Flatpak package: {{ item }}"
   community.general.flatpak:
     name: "{{ item }}"
     state: present
