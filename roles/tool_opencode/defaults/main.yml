@@ -1,0 +1,4 @@
+---
+tool_opencode_node_version: "lts/*"
+tool_opencode_npm_packages:
+  - opencode-ai

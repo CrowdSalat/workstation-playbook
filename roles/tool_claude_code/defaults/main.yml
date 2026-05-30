@@ -1,0 +1,4 @@
+---
+tool_claude_code_node_version: "lts/*"
+tool_claude_code_npm_packages:
+  - "@anthropic-ai/claude-code"

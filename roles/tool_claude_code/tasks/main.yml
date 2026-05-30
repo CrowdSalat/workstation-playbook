@@ -1,0 +1,14 @@
+---
+- name: Check Claude Code availability
+  ansible.builtin.command: command -v claude
+  register: tool_claude_code_check
+  changed_when: false
+  failed_when: false
+
+- name: Install Claude Code globally via npm package manager role
+  ansible.builtin.include_role:
+    name: package_manager_npm
+  vars:
+    package_manager_npm_node_version: "{{ tool_claude_code_node_version }}"
+    package_manager_npm_packages: "{{ tool_claude_code_npm_packages }}"
+  when: tool_claude_code_check.rc != 0

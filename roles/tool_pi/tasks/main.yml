@@ -1,8 +1,14 @@
 ---
-- name: Install pi coding agent on Linux
-  ansible.builtin.include_tasks: install-linux.yml
-  when: ansible_facts["system"] == "Linux"
+- name: Check pi coding agent availability
+  ansible.builtin.command: command -v pi
+  register: tool_pi_check
+  changed_when: false
+  failed_when: false
 
-- name: Install pi coding agent on macOS
-  ansible.builtin.include_tasks: install-mac.yml
-  when: ansible_facts["system"] == "Darwin"
+- name: Install pi coding agent globally via npm package manager role
+  ansible.builtin.include_role:
+    name: package_manager_npm
+  vars:
+    package_manager_npm_node_version: "{{ tool_pi_node_version }}"
+    package_manager_npm_packages: "{{ tool_pi_npm_packages }}"
+  when: tool_pi_check.rc != 0

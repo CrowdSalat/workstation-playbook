@@ -1,7 +1,0 @@
----
-- name: Install pi coding agent globally via npm
-  ansible.builtin.include_role:
-    name: package_manager_npm
-  vars:
-    package_manager_npm_node_version: "{{ tool_pi_node_version }}"
-    package_manager_npm_packages: "{{ tool_pi_npm_packages }}"

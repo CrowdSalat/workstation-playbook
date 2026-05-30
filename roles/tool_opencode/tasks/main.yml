@@ -1,0 +1,14 @@
+---
+- name: Check OpenCode availability
+  ansible.builtin.command: command -v opencode
+  register: tool_opencode_check
+  changed_when: false
+  failed_when: false
+
+- name: Install OpenCode globally via npm package manager role
+  ansible.builtin.include_role:
+    name: package_manager_npm
+  vars:
+    package_manager_npm_node_version: "{{ tool_opencode_node_version }}"
+    package_manager_npm_packages: "{{ tool_opencode_npm_packages }}"
+  when: tool_opencode_check.rc != 0
