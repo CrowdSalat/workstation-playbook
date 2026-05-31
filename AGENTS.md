@@ -42,6 +42,18 @@ the repository root `AGENTS.md`.
 - Prefer focused test runs using role-list overrides to isolate behavior.
 - Escalate to broader runs only after focused runs pass.
 
+## Git commits
+
+When writing commit messages (including suggested messages in chat):
+
+- **[Conventional Commits](https://www.conventionalcommits.org/)** — use `type(optional scope): summary`. Pick a fitting `type` (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, etc.); add a short `scope` when it clarifies the area (role name, component).
+- **Subject** — imperative after the colon; the header line is at most **72 characters** total (including `type(scope): `), no trailing period.
+- **Body** — Optional. Separate from the subject with a single blank line. Include a body only when it provides essential context for future reference (e.g., why a change was made, underlying bug root causes, or migration hints). Adopt the Linux kernel approach: use the body to explain the reasoning and intent behind the change, not to restate the code diff. Keep it tight, impactful, and free of conversational noise.
+- **Footers** — none, except a **`BREAKING CHANGE:`** footer when documenting a breaking change, as Conventional Commits allows. Mark breaking commits with `!` on the type or scope when that is enough (`feat!:`, `feat(scope)!:`).
+- **One logical change per commit** — do not mix unrelated topics; avoid splitting one logical change into many tiny commits.
+
+Examples: `feat(teddycloud): add OCP entrypoint and Dockerfile`, `fix(metallb): correct BGP peer configuration`.
+
 ## Detailed conventions
 
 See `ROLE_CONVENTIONS.md` for detailed implementation rules (naming patterns,
