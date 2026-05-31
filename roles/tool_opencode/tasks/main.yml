@@ -12,3 +12,6 @@
     package_manager_npm_node_version: "{{ tool_opencode_node_version }}"
     package_manager_npm_packages: "{{ tool_opencode_npm_packages }}"
   when: tool_opencode_check.rc != 0
+
+- name: Run OpenCode postinstall configuration
+  ansible.builtin.include_tasks: postinstall.yml

@@ -12,3 +12,6 @@
     package_manager_npm_node_version: "{{ tool_claude_code_node_version }}"
     package_manager_npm_packages: "{{ tool_claude_code_npm_packages }}"
   when: tool_claude_code_check.rc != 0
+
+- name: Run Claude Code postinstall configuration
+  ansible.builtin.include_tasks: postinstall.yml

@@ -30,3 +30,6 @@
   when: tool_pi_extensions | length > 0
   args:
     executable: /bin/bash
+
+- name: Run Pi postinstall configuration
+  ansible.builtin.include_tasks: postinstall.yml

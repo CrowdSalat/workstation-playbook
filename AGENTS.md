@@ -19,6 +19,13 @@ the repository root `AGENTS.md`.
 - Keep `package_manager_*` roles toolbox-agnostic.
 - Control toolbox execution context in playbooks (delegation), not inside PM roles.
 
+## Configuration file management
+
+- When managing configuration files as complete units (no variables), store them as plain files in the role's `files/` directory (`roles/<role_name>/files/config_name.ext`) and deploy with `ansible.builtin.copy`.
+- Only move files to the playbook-level `files/` directory when multiple roles need the same file.
+- This enables proper syntax validation, clean git diffs, native editor support, and keeps roles modular and self-contained.
+- Reserve inline content for small snippets (< 10 lines) or when the content is genuinely task-specific logic.
+
 ## Playbook execution model
 
 - Fedora uses split role lists:

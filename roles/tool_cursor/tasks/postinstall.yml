@@ -1,0 +1,12 @@
+---
+- name: Ensure ~/ws/.cursor/rules directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/ws/.cursor/rules"
+    state: directory
+    mode: '0755'
+
+- name: Deploy Cursor global agent rules
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/files/templates/coding_agents/SHARED_AGENTS.md"
+    dest: "{{ ansible_env.HOME }}/ws/.cursor/rules/coding-standards.mdc"
+    mode: '0644'

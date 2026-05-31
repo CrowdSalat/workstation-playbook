@@ -1,0 +1,18 @@
+---
+- name: Ensure ~/.claude directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.claude"
+    state: directory
+    mode: '0755'
+
+- name: Deploy Claude Code global agent rules
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/files/templates/coding_agents/SHARED_AGENTS.md"
+    dest: "{{ ansible_env.HOME }}/.claude/CLAUDE.md"
+    mode: '0644'
+
+- name: Deploy Claude Code settings.json
+  ansible.builtin.copy:
+    src: settings.json
+    dest: "{{ ansible_env.HOME }}/.claude/settings.json"
+    mode: '0644'
