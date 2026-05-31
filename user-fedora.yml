@@ -30,7 +30,7 @@
       - tool_gnome_extensions
       - config_gnome_shortcuts
     roles_toolbox:
-      - tool_java
+      - tool_jvm
       - tool_cli_utils
 
   tasks:

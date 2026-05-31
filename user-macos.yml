@@ -22,7 +22,7 @@
       - tool_obs_studio
       - tool_firefox
       - tool_chromium
-      - tool_java
+      - tool_jvm
       - tool_cli_utils
       - tool_gcp
       - tool_uvcc

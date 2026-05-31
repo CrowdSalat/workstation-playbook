@@ -1,0 +1,7 @@
+---
+- name: Install JVM tools via SDKMAN on host
+  ansible.builtin.include_role:
+    name: package_manager_sdkman
+  vars:
+    package_manager_sdkman_items: "{{ tool_jvm_sdkman_items }}"
+    package_manager_sdkman_defaults: "{{ tool_jvm_sdkman_defaults }}"

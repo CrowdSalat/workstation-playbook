@@ -1,0 +1,9 @@
+---
+tool_jvm_sdkman_items:
+  - java@25.0.3-tem
+  - java@21.0.11-tem
+  - maven
+  - kotlin
+
+tool_jvm_sdkman_defaults:
+  - java@25.0.3-tem
