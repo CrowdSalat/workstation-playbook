@@ -1,0 +1,14 @@
+---
+- name: Ensure Ghostty config directory exists
+  ansible.builtin.file:
+    path: "{{ tool_ghostty_config_dir }}"
+    state: directory
+    mode: "0755"
+  when: tool_ghostty_manage_config
+
+- name: Manage Ghostty config file
+  ansible.builtin.copy:
+    src: config
+    dest: "{{ tool_ghostty_config_path }}"
+    mode: "0644"
+  when: tool_ghostty_manage_config

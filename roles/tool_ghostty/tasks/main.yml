@@ -6,3 +6,7 @@
 - name: Install Ghostty from Homebrew on macOS
   ansible.builtin.include_tasks: install-mac.yml
   when: ansible_facts["system"] == "Darwin"
+
+- name: Run shared Ghostty postinstall tasks
+  ansible.builtin.include_tasks: postinstall.yml
+  when: ansible_facts["system"] in ["Linux", "Darwin"]

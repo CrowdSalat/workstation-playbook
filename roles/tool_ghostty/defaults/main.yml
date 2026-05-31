@@ -4,3 +4,7 @@ tool_ghostty_linux_rpm_ostree_packages:
     copr: alternateved/ghostty
 
 tool_ghostty_macos_cask: ghostty
+
+tool_ghostty_config_dir: "{{ ansible_facts['env']['HOME'] }}/.config/ghostty"
+tool_ghostty_config_path: "{{ tool_ghostty_config_dir }}/config"
+tool_ghostty_manage_config: true
