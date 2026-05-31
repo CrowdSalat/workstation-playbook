@@ -1,0 +1,34 @@
+---
+tool_vi_vimrc_path: "{{ ansible_facts['env']['HOME'] }}/.vimrc"
+tool_vi_manage_config: true
+# Full .vimrc content. Override this multiline string per host/group/playbook.
+tool_vi_config: |
+  " Basic settings
+  syntax on                  " Enable syntax highlighting
+  set number                 " Show line numbers
+
+  " Indentation & tabs
+  set tabstop=2              " Show existing tabs as 2 spaces
+  set shiftwidth=2           " Indent by 2 spaces when auto-indenting
+  set expandtab              " Convert tabs to spaces (important for YAML!)
+  set autoindent             " Copy indent from current line when starting new line
+
+  " Search improvements
+  set hlsearch               " Highlight search results
+  set incsearch              " Show search matches as you type
+  set ignorecase             " Case-insensitive search...
+  set smartcase              " ...unless search contains uppercase
+
+  " UI improvements
+  set showmatch              " Highlight matching brackets
+  set ruler                  " Show cursor position in status line
+  set cursorline             " Highlight current line
+  set wildmenu               " Better command-line completion
+  set scrolloff=3            " Keep 3 lines visible above/below cursor
+
+  " YAML-specific
+  autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+
+  " JSON-specific
+  autocmd FileType json setlocal ts=2 sts=2 sw=2 expandtab
+  autocmd FileType json syntax match Comment +\/\/.\+$+  " Allow // comments in JSON

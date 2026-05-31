@@ -1,0 +1,7 @@
+---
+- name: Manage vim configuration
+  ansible.builtin.copy:
+    dest: "{{ tool_vi_vimrc_path }}"
+    content: "{{ tool_vi_config | trim ~ '\n' }}"
+    mode: "0644"
+  when: tool_vi_manage_config

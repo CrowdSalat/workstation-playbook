@@ -28,6 +28,7 @@
       - tool_uvcc
       - tool_vscodium
       - tool_dock
+      - tool_vi
 
   tasks:
     - name: Apply enabled roles
