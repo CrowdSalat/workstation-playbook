@@ -29,6 +29,8 @@
       - tool_uvcc
       - tool_gnome_extensions
       - config_gnome_shortcuts
+      - tool_vi
+
     roles_toolbox:
       - tool_jvm
       - tool_cli_utils
