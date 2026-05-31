@@ -7,6 +7,6 @@
 
 - name: Deploy Cursor global agent rules
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/files/templates/coding_agents/SHARED_AGENTS.md"
+    src: "{{ playbook_dir }}/files/coding_agents/SHARED_AGENTS.md"
     dest: "{{ ansible_env.HOME }}/ws/.cursor/rules/coding-standards.mdc"
     mode: '0644'
