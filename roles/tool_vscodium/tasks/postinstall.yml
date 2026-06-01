@@ -1,101 +1,44 @@
 ---
-- name: Pick platform-specific VSCodium terminal fragment
-  ansible.builtin.set_fact:
-    tool_vscodium_terminal_json: "{{ tool_vscodium_terminal_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_terminal_json_linux }}"
-
-- name: Optionally add Ghostty as VSCodium external terminal
-  ansible.builtin.set_fact:
-    tool_vscodium_terminal_json: >-
-      {{ (tool_vscodium_terminal_json if tool_vscodium_terminal_json is mapping else (tool_vscodium_terminal_json | from_json)) |
-         combine(
-           (tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux)
-           if (tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux) is mapping
-           else ((tool_vscodium_ghostty_external_json_macos if ansible_facts['system'] == 'Darwin' else tool_vscodium_ghostty_external_json_linux) | from_json)
-         ) |
-         to_nice_json }}
-  when: >-
-    'tool_ghostty' in (
-      (roles_host | default([])) +
-      (roles_toolbox | default([]))
-    )
-
 - name: Ensure VSCodium config directory exists
   ansible.builtin.file:
-    path: "{{ tool_vscodium_config_dir }}"
+    path: "{{ _vscodium_config_dir }}"
     state: directory
     mode: "0755"
 
-- name: Stat VSCodium settings
-  ansible.builtin.stat:
-    path: "{{ tool_vscodium_settings }}"
-  register: tool_vscodium_settings_stat
-
-- name: Write initial VSCodium settings
-  ansible.builtin.copy:
-    dest: "{{ tool_vscodium_settings }}"
-    content: "{{ tool_vscodium_terminal_json }}"
-    force: false
-
-- name: Write VSCodium terminal fragment for merge
-  ansible.builtin.copy:
-    dest: "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json"
-    content: "{{ tool_vscodium_terminal_json }}"
+- name: Template VSCodium settings.json
+  ansible.builtin.template:
+    src: settings.json.j2
+    dest: "{{ _vscodium_config_dir }}/settings.json"
     mode: "0644"
-  when: tool_vscodium_settings_stat.stat.exists and tool_vscodium_settings_stat.stat.size > 0
-  changed_when: false
+  when: tool_vscodium_manage_settings
 
-- name: Merge terminal profile into existing VSCodium settings
-  ansible.builtin.shell: |
-    tmp=$(mktemp)
-    jq -s '.[0] * .[1]' "{{ tool_vscodium_settings }}" "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json" > "$tmp"
-    if cmp -s "$tmp" "{{ tool_vscodium_settings }}"; then
-      rm -f "$tmp" "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json"
-      echo NOCHANGE
-    else
-      mv "$tmp" "{{ tool_vscodium_settings }}"
-      rm -f "{{ tool_vscodium_config_dir }}/ansible_terminal_fragment.json"
-      echo CHANGED
-    fi
-  when: tool_vscodium_settings_stat.stat.exists and tool_vscodium_settings_stat.stat.size > 0
-  register: tool_vscodium_merge
-  changed_when: "'CHANGED' in (tool_vscodium_merge.stdout | default(''))"
-  failed_when: tool_vscodium_merge.rc != 0
-
-- name: Define internal VSCodium extension install settings
+- name: Set platform-specific product.json path
   ansible.builtin.set_fact:
-    tool_vscodium_vsix_cache_dir: "{{ ansible_facts['env']['HOME'] }}/.cache/vscodium-vsix"
-    tool_vscodium_extension_install_argv: "{{ ['/Applications/VSCodium.app/Contents/Resources/app/bin/codium', '--install-extension'] if ansible_facts['system'] == 'Darwin' else ['flatpak', 'run', tool_vscodium_flatpak_id, '--install-extension'] }}"
+    _vscodium_product_json_path: "{{ _vscodium_product_json_macos if ansible_facts['system'] == 'Darwin' else _vscodium_product_json_linux }}"
 
-- name: Ensure VSIX cache directory exists
+- name: Ensure product.json directory exists
   ansible.builtin.file:
-    path: "{{ tool_vscodium_vsix_cache_dir }}"
+    path: "{{ _vscodium_product_json_path | dirname }}"
     state: directory
     mode: "0755"
-  when: tool_vscodium_extensions | length > 0
 
-- name: Install VSCodium extensions by id (Open VSX / default registry)
+- name: Enable Microsoft VS Marketplace in VSCodium
+  ansible.builtin.copy:
+    src: product.json
+    dest: "{{ _vscodium_product_json_path }}"
+    mode: "0644"
+
+- name: Define extension installation command
+  ansible.builtin.set_fact:
+    _vscodium_install_cmd: "{{ ['/Applications/VSCodium.app/Contents/Resources/app/bin/codium', '--install-extension'] if ansible_facts['system'] == 'Darwin' else ['flatpak', 'run', _vscodium_flatpak_id, '--install-extension'] }}"
+
+- name: Install VSCodium extensions
   ansible.builtin.command:
-    argv: "{{ tool_vscodium_extension_install_argv + [item] }}"
-  register: tool_vscodium_ext_install
-  changed_when: >-
-    'already installed' not in
-    ((tool_vscodium_ext_install.stdout | default('')) ~ (tool_vscodium_ext_install.stderr | default(''))) | lower
-  failed_when: tool_vscodium_ext_install.rc != 0
+    argv: "{{ _vscodium_install_cmd + [item] }}"
+  register: _vscodium_ext_result
+  changed_when: "'already installed' not in (_vscodium_ext_result.stdout | default('') | lower) and 'already installed' not in (_vscodium_ext_result.stderr | default('') | lower)"
+  failed_when: _vscodium_ext_result.rc != 0
   loop: "{{ tool_vscodium_extensions | reject('mapping') | list }}"
-  when: tool_vscodium_extensions | length > 0
-
-- name: Install VSCodium extensions from VSIX URLs
-  ansible.builtin.include_tasks: extension-url.yml
-  loop: "{{ tool_vscodium_extensions | select('mapping') | selectattr('url', 'defined') | list }}"
-  loop_control:
-    loop_var: ext_item
-  when: tool_vscodium_extensions | length > 0
-
-- name: Install VSCodium extensions from Visual Studio Marketplace VSIX
-  ansible.builtin.include_tasks: extension-marketplace.yml
-  loop: "{{ tool_vscodium_extensions | select('mapping') | selectattr('marketplace', 'defined') | list }}"
-  loop_control:
-    loop_var: ext_item
   when: tool_vscodium_extensions | length > 0
 
 - name: Add code shell function to bashrc
@@ -109,7 +52,7 @@
       }
       {% else %}
       code() {
-        flatpak run {{ tool_vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
+        flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
       }
       {% endif %}
     create: true
@@ -126,7 +69,7 @@
       }
       {% else %}
       codium() {
-        flatpak run {{ tool_vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
+        flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
       }
       {% endif %}
     create: true

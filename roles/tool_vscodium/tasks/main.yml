@@ -1,4 +1,12 @@
 ---
+- name: Define platform-specific internal variables
+  ansible.builtin.set_fact:
+    _vscodium_flatpak_id: com.vscodium.codium
+    _vscodium_macos_cask: vscodium
+    _vscodium_config_dir: "{{ ansible_facts['env']['HOME'] }}/.config/VSCodium/User"
+    _vscodium_product_json_linux: "{{ ansible_facts['env']['HOME'] }}/.var/app/com.vscodium.codium/config/VSCodium/product.json"
+    _vscodium_product_json_macos: "{{ ansible_facts['env']['HOME'] }}/Library/Application Support/VSCodium/product.json"
+
 - name: Install VSCodium on Linux
   ansible.builtin.include_tasks: install-linux.yml
   when: ansible_facts["system"] == "Linux"

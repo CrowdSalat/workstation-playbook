@@ -4,4 +4,4 @@
     name: package_manager_brew
   vars:
     package_manager_brew_casks:
-      - "{{ tool_vscodium_macos_cask }}"
+      - "{{ _vscodium_macos_cask }}"

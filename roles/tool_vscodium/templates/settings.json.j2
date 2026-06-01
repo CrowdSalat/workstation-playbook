@@ -1,0 +1,20 @@
+{
+{% if ansible_facts['system'] == 'Linux' and toolbox_name is defined %}
+  "terminal.integrated.profiles.linux": {
+    "Toolbox (host-spawn)": {
+      "path": "flatpak-spawn",
+      "args": ["--host", "toolbox", "run", "{{ toolbox_name }}", "bash"]
+    }
+  },
+  "terminal.integrated.defaultProfile.linux": "Toolbox (host-spawn)",
+{% else %}
+  "terminal.integrated.defaultProfile.linux": "bash",
+{% endif %}
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.external.linuxExec": "ghostty",
+  "terminal.external.osxExec": "ghostty",
+  "workbench.colorTheme": "Default Dark Modern",
+  "editor.tabSize": 2,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}

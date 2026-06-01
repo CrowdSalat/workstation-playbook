@@ -4,4 +4,4 @@
     name: package_manager_flatpak
   vars:
     package_manager_flatpak_packages:
-      - "{{ tool_vscodium_flatpak_id }}"
+      - "{{ _vscodium_flatpak_id }}"
