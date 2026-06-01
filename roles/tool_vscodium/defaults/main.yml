@@ -14,3 +14,7 @@ tool_vscodium_extensions:
   - stuart.unique-window-colors
   - JetBrains.kotlin-server
   - timheuer.pfx-view
+  - vscjava.vscode-java-pack
+  - redhat.vscode-yaml
+  - ms-python.python
+
