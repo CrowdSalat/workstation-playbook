@@ -17,4 +17,5 @@ tool_vscodium_extensions:
   - vscjava.vscode-java-pack
   - redhat.vscode-yaml
   - ms-python.python
+  - golang.Go
 
