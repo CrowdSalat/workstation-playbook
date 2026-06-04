@@ -31,6 +31,15 @@ Examples:
   - *Cleanup (optional):* `podman manifest rm docker.io/username/image:tag`
 - **Version Safety** — Before building and pushing, check whether the target tag already exists in the registry: `podman manifest inspect docker://docker.io/username/image:tag`. If it exists, do not overwrite it — bump to the next available version or ask the user which version to use.
 
+## Container Image Guidelines
+
+- **Use `Containerfile`, not `Dockerfile`** — Always name container build files `Containerfile` (OCI standard). Use `-f Containerfile` in build commands when needed.
+- **OpenShift `restricted-v2` SCC compatibility** — All container images must run under OpenShift's `restricted-v2` Security Context Constraint by default:
+  - **No hardcoded UIDs** — OpenShift assigns a random UID at runtime. Never `chown` to a fixed UID.
+  - **Use GID 0 (root group)** — OpenShift always assigns GID 0. Make writable directories group-accessible: `chmod 775 <dir> && chgrp 0 <dir>`.
+  - **Set a non-root default USER** — Use `USER 65534:0` (`nobody` with root group) as the default. OpenShift overrides the UID but keeps GID 0.
+  - **Avoid privileged operations at runtime** — No host mounts, no `SYS_ADMIN`, no `hostNetwork` unless technically required. If a capability or privilege escalation is needed, flag it explicitly and explain why it cannot be avoided.
+
 ## Tool Installation Philosophy
 
 - **Use Ansible playbook for tool installation** — Do not suggest ad-hoc installations via `curl | bash`, `brew install`, or manual downloads.
