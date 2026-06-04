@@ -3,7 +3,7 @@ tool_chromium_linux_flatpak_ids:
   - org.chromium.Chromium
 
 tool_chromium_macos_casks:
-  - chromium
+  - ungoogled-chromium
 
 tool_chromium_extensions:
   - name: bitwarden
