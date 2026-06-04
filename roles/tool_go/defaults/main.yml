@@ -1,0 +1,10 @@
+---
+tool_go_macos_brew_formulae:
+  - go
+
+tool_go_linux_dnf_packages:
+  - golang
+
+tool_go_tools:
+  - golang.org/x/tools/gopls@latest
+  - github.com/golangci/golangci-lint/cmd/golangci-lint@latest

@@ -33,6 +33,7 @@
 
     roles_toolbox:
       - tool_jvm
+      - tool_go
       - tool_cli_utils
 
   tasks:

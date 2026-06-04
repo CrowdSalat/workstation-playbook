@@ -23,6 +23,7 @@
       - tool_firefox
       - tool_chromium
       - tool_jvm
+      - tool_go
       - tool_cli_utils
       - tool_gcp
       - tool_uvcc

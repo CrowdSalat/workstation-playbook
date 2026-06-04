@@ -1,0 +1,12 @@
+---
+- name: Install Go on Linux
+  ansible.builtin.include_tasks: install-linux.yml
+  when: ansible_facts["system"] == "Linux"
+
+- name: Install Go on macOS
+  ansible.builtin.include_tasks: install-mac.yml
+  when: ansible_facts["system"] == "Darwin"
+
+- name: Install Go tools
+  ansible.builtin.include_tasks: postinstall.yml
+  when: tool_go_tools | length > 0

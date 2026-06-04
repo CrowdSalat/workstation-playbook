@@ -1,0 +1,6 @@
+---
+- name: Install Go via dnf package manager role
+  ansible.builtin.include_role:
+    name: package_manager_dnf
+  vars:
+    package_manager_dnf_packages: "{{ tool_go_linux_dnf_packages }}"

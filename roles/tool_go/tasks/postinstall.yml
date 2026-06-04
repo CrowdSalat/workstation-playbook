@@ -1,0 +1,10 @@
+---
+- name: Install Go tools (gopls, golangci-lint)
+  ansible.builtin.command:
+    cmd: "go install {{ item }}"
+  loop: "{{ tool_go_tools }}"
+  register: tool_go_install_result
+  changed_when: tool_go_install_result.rc == 0
+  environment:
+    GOPATH: "{{ ansible_facts['env']['HOME'] }}/go"
+    PATH: "{{ ansible_facts['env']['HOME'] }}/go/bin:{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
