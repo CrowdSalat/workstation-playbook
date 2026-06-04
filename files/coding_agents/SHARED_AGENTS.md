@@ -24,10 +24,12 @@ Examples:
 - **Prefer Podman over Docker** — Use `podman` commands instead of `docker` unless Docker is explicitly required by the project. Default to Podman-compatible solutions.
 - **Container Registry** — Always push images to `docker.io` (Docker Hub) as the default registry.
 - **Multi-Architecture Builds** — Build images for both AMD64 (x86_64) and ARM64. AMD64 is the **primary target and must always be built**. ARM64 should be included whenever possible.
-- **The Easiest Multi-Arch Workflow** — To build both architectures and push them under a single tag. Use the `podman build --platform` flag with a comma-separated list.
-  - *Standard (Both):* `podman build --platform linux/amd64,linux/arm64 -t docker.io/username/image:tag .`
-  - *Fallback (If ARM64 fails/is blocked):* `podman build --platform linux/amd64 -t docker.io/username/image:tag .`
-  - *Pushing:* Always append `--all` when pushing multi-arch tags: `podman push docker.io/username/image:tag --all`
+- **Multi-Arch Workflow** — Use `--manifest` (not `-t`) to build a proper manifest list, and `podman manifest push` (not `podman push`) to push it. Using `-t` with multiple platforms silently produces only a single-arch image.
+  - *Build:* `podman build --platform linux/amd64,linux/arm64 --manifest docker.io/username/image:tag .`
+  - *Fallback (If ARM64 fails/is blocked):* `podman build --platform linux/amd64 --manifest docker.io/username/image:tag .`
+  - *Push:* `podman manifest push --all docker.io/username/image:tag docker://docker.io/username/image:tag`
+  - *Cleanup (optional):* `podman manifest rm docker.io/username/image:tag`
+- **Version Safety** — Before building and pushing, check whether the target tag already exists in the registry: `podman manifest inspect docker://docker.io/username/image:tag`. If it exists, do not overwrite it — bump to the next available version or ask the user which version to use.
 
 ## Tool Installation Philosophy
 
