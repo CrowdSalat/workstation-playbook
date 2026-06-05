@@ -18,4 +18,6 @@ tool_vscodium_extensions:
   - redhat.vscode-yaml
   - ms-python.python
   - golang.Go
-
+  - ms-vscode-remote.remote-ssh
+  - ms-vscode.remote-explorer
+  - ms-vscode-remote.remote-containers
