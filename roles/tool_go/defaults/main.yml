@@ -1,4 +1,8 @@
 ---
+tool_go_gopath: "{{ ansible_facts['env']['HOME'] }}/go"
+tool_go_bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+tool_go_zshrc: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+
 tool_go_macos_brew_formulae:
   - go
 
