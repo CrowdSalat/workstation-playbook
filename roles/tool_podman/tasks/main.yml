@@ -6,3 +6,15 @@
 - name: Install Podman stack on macOS
   ansible.builtin.include_tasks: install-mac.yml
   when: ansible_facts["system"] == "Darwin"
+
+- name: Configure Podman for Testcontainers on Linux
+  ansible.builtin.include_tasks: postinstall-linux.yml
+  when:
+    - ansible_facts["system"] == "Linux"
+    - tool_podman_testcontainers_enabled | bool
+
+- name: Configure Podman for Testcontainers on macOS
+  ansible.builtin.include_tasks: postinstall-mac.yml
+  when:
+    - ansible_facts["system"] == "Darwin"
+    - tool_podman_testcontainers_enabled | bool

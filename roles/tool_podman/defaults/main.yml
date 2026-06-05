@@ -14,3 +14,5 @@ tool_podman_macos_brew_casks:
   - podman-desktop
 
 tool_podman_launch_agent_label: "io.playbook.podman-machine-start"
+
+tool_podman_testcontainers_enabled: false

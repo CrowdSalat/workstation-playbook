@@ -1,0 +1,18 @@
+---
+- name: Get Podman machine info
+  ansible.builtin.command: podman machine inspect
+  register: tool_podman_machine_info
+  changed_when: false
+
+- name: Set Podman socket path fact
+  ansible.builtin.set_fact:
+    tool_podman_socket_path: "{{ (tool_podman_machine_info.stdout | from_json)[0].ConnectionInfo.PodmanSocket.Path }}"
+
+- name: Write Testcontainers properties file for Podman
+  ansible.builtin.copy:
+    dest: "{{ ansible_facts['env']['HOME'] }}/.testcontainers.properties"
+    content: |
+      docker.host=unix://{{ tool_podman_socket_path }}
+      ryuk.disabled=true
+    mode: "0644"
+
