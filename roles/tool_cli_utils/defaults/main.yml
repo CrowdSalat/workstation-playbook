@@ -1,14 +1,16 @@
 ---
 tool_cli_utils_linux_dnf_packages:
-  - jq
-  - yq
-  - tree
-  - ripgrep
   - fd-find
+  - jq
+  - ripgrep
+  - tree
+  - watch
+  - yq
 
 tool_cli_utils_macos_brew_formulae:
-  - jq
-  - yq
-  - tree
-  - ripgrep
   - fd
+  - jq
+  - ripgrep
+  - tree
+  - watch
+  - yq
