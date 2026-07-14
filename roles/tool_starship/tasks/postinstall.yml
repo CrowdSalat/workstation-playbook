@@ -13,20 +13,14 @@
     mode: "0644"
   when: tool_starship_manage_config
 
-- name: Initialize Starship in bashrc
+- name: Initialize Starship in shell configs
   ansible.builtin.blockinfile:
-    path: "{{ tool_starship_bashrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - starship"
     block: |
-      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_init_command }} init bash)"
+      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_init_command }} init {{ rc_file.name }})"
     create: true
     insertafter: EOF
-
-- name: Initialize Starship in zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ tool_starship_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - starship"
-    block: |
-      [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_init_command }} init zsh)"
-    create: true
-    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file

@@ -88,30 +88,19 @@
     state: link
     force: true
 
-- name: Enable Google Cloud CLI path and completion in bashrc
+- name: Enable Google Cloud CLI path and completion in shell configs
   ansible.builtin.blockinfile:
-    path: "{{ tool_gcp_bashrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - gcloud"
     block: |
-      if [ -r "{{ tool_gcp_sdk_dir }}/path.bash.inc" ]; then
-        . "{{ tool_gcp_sdk_dir }}/path.bash.inc"
+      if [ -r "{{ tool_gcp_sdk_dir }}/path.{{ rc_file.name }}.inc" ]; then
+        . "{{ tool_gcp_sdk_dir }}/path.{{ rc_file.name }}.inc"
       fi
-      if [ -r "{{ tool_gcp_sdk_dir }}/completion.bash.inc" ]; then
-        . "{{ tool_gcp_sdk_dir }}/completion.bash.inc"
+      if [ -r "{{ tool_gcp_sdk_dir }}/completion.{{ rc_file.name }}.inc" ]; then
+        . "{{ tool_gcp_sdk_dir }}/completion.{{ rc_file.name }}.inc"
       fi
     create: true
     insertafter: EOF
-
-- name: Enable Google Cloud CLI path and completion in zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ tool_gcp_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - gcloud"
-    block: |
-      if [ -r "{{ tool_gcp_sdk_dir }}/path.zsh.inc" ]; then
-        . "{{ tool_gcp_sdk_dir }}/path.zsh.inc"
-      fi
-      if [ -r "{{ tool_gcp_sdk_dir }}/completion.zsh.inc" ]; then
-        . "{{ tool_gcp_sdk_dir }}/completion.zsh.inc"
-      fi
-    create: true
-    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file

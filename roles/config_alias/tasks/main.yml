@@ -1,7 +1,7 @@
 ---
-- name: Add aliases to bashrc
+- name: Add aliases to shell configs
   ansible.builtin.blockinfile:
-    path: "{{ config_alias_bashrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - aliases"
     block: |
       {% for alias_line in config_alias_lines %}
@@ -9,16 +9,7 @@
       {% endfor %}
     create: true
     insertafter: EOF
-  when: config_alias_lines | length > 0
-
-- name: Add aliases to zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ config_alias_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - aliases"
-    block: |
-      {% for alias_line in config_alias_lines %}
-      {{ alias_line }}
-      {% endfor %}
-    create: true
-    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file
   when: config_alias_lines | length > 0

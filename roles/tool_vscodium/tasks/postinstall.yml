@@ -41,36 +41,20 @@
   loop: "{{ tool_vscodium_extensions | reject('mapping') | list }}"
   when: tool_vscodium_extensions | length > 0
 
-- name: Add code shell function to bashrc
+- name: Add code and codium shell functions to shell configs
   ansible.builtin.blockinfile:
-    path: "{{ bashrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - vscodium code alias"
+    path: "{{ rc_file.path }}"
+    marker: "# {mark} ANSIBLE MANAGED - vscodium"
     block: |
       {% if ansible_facts["system"] == "Darwin" %}
-      code() {
-        open -a "VSCodium" "$@" >/dev/null 2>&1 &
-      }
+      code() { open -a "VSCodium" "$@" >/dev/null 2>&1 & }
+      codium() { open -a "VSCodium" "$@" >/dev/null 2>&1 & }
       {% else %}
-      code() {
-        flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
-      }
+      code() { flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 & }
+      codium() { flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 & }
       {% endif %}
     create: true
     insertafter: EOF
-
-- name: Add codium shell function to bashrc
-  ansible.builtin.blockinfile:
-    path: "{{ bashrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - vscodium codium alias"
-    block: |
-      {% if ansible_facts["system"] == "Darwin" %}
-      codium() {
-        open -a "VSCodium" "$@" >/dev/null 2>&1 &
-      }
-      {% else %}
-      codium() {
-        flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 &
-      }
-      {% endif %}
-    create: true
-    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file

@@ -4,7 +4,8 @@
   gather_facts: true
 
   vars:
-    bashrc: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+    shell_rc_files:
+      - { path: "{{ ansible_facts['env']['HOME'] }}/.bashrc", name: bash }
     workstation_ssh_identity: id_ed25519
     toolbox_name: "fedora-toolbox-43"
     roles_host:

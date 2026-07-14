@@ -33,25 +33,18 @@
       - package_manager_sdkman_init_after.stat.exists
     fail_msg: "SDKMAN bootstrap completed without sdkman-init.sh."
 
-- name: Ensure SDKMAN init is present in bashrc
+- name: Ensure SDKMAN init is present in shell configs
   ansible.builtin.blockinfile:
-    path: "{{ package_manager_sdkman_bashrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - sdkman"
     block: |
       export SDKMAN_DIR="$HOME/.sdkman"
       [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
     create: true
     insertafter: EOF
-
-- name: Ensure SDKMAN init is present in zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ package_manager_sdkman_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - sdkman"
-    block: |
-      export SDKMAN_DIR="$HOME/.sdkman"
-      [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-    create: true
-    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file
 
 - name: "Install SDKMAN item: {{ item }}"
   ansible.builtin.shell: |

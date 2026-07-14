@@ -16,25 +16,18 @@
   environment:
     HOME: "{{ ansible_facts['env']['HOME'] }}"
 
-- name: Ensure nvm init is present in bashrc
+- name: Ensure nvm init is present in shell configs
   ansible.builtin.blockinfile:
-    path: "{{ package_manager_npm_bashrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - nvm"
     block: |
       export NVM_DIR="{{ package_manager_npm_nvm_dir }}"
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     create: true
     insertafter: EOF
-
-- name: Ensure nvm init is present in zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ package_manager_npm_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - nvm"
-    block: |
-      export NVM_DIR="{{ package_manager_npm_nvm_dir }}"
-      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    create: true
-    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file
 
 - name: Ensure Node.js version is installed and default via nvm
   ansible.builtin.shell: |

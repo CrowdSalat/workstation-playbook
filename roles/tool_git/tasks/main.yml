@@ -48,9 +48,9 @@
     - tool_git_enable_ssh_signing | bool
     - tool_git_signing_key | length > 0
 
-- name: Enable git completion in bashrc
+- name: Enable git completion in bash configs
   ansible.builtin.blockinfile:
-    path: "{{ tool_git_bashrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - git completion"
     block: |
       for _git_completion in {{ tool_git_completion_candidates | map('quote') | join(' ') }}; do
@@ -62,10 +62,13 @@
       unset _git_completion
     create: true
     insertafter: EOF
+  loop: "{{ shell_rc_files | selectattr('name', 'equalto', 'bash') | list }}"
+  loop_control:
+    loop_var: rc_file
 
-- name: Enable git completion in zshrc
+- name: Enable git completion in zsh configs
   ansible.builtin.blockinfile:
-    path: "{{ tool_git_zshrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - git completion"
     block: |
       autoload -Uz compinit bashcompinit
@@ -80,3 +83,6 @@
       unset _git_completion
     create: true
     insertafter: EOF
+  loop: "{{ shell_rc_files | selectattr('name', 'equalto', 'zsh') | list }}"
+  loop_control:
+    loop_var: rc_file

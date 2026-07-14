@@ -1,21 +1,15 @@
 ---
-- name: Add Go bin directory to PATH in bashrc
+- name: Add Go bin directory to PATH in shell configs
   ansible.builtin.blockinfile:
-    path: "{{ tool_go_bashrc }}"
+    path: "{{ rc_file.path }}"
     marker: "# {mark} ANSIBLE MANAGED - go"
     block: |
       export PATH="{{ tool_go_gopath }}/bin:$PATH"
     create: true
     insertafter: EOF
-
-- name: Add Go bin directory to PATH in zshrc
-  ansible.builtin.blockinfile:
-    path: "{{ tool_go_zshrc }}"
-    marker: "# {mark} ANSIBLE MANAGED - go"
-    block: |
-      export PATH="{{ tool_go_gopath }}/bin:$PATH"
-    create: true
-    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file
 
 - name: Install Go tools
   ansible.builtin.command:
