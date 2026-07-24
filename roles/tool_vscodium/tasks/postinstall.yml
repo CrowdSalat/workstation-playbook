@@ -47,8 +47,8 @@
     marker: "# {mark} ANSIBLE MANAGED - vscodium"
     block: |
       {% if ansible_facts["system"] == "Darwin" %}
-      code() { open -a "VSCodium" "$@" >/dev/null 2>&1 & }
-      codium() { open -a "VSCodium" "$@" >/dev/null 2>&1 & }
+      code() { /Applications/VSCodium.app/Contents/Resources/app/bin/codium "$@" >/dev/null 2>&1 & }
+      codium() { /Applications/VSCodium.app/Contents/Resources/app/bin/codium "$@" >/dev/null 2>&1 & }
       {% else %}
       code() { flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 & }
       codium() { flatpak run {{ _vscodium_flatpak_id }} "$@" >/dev/null 2>&1 & }
