@@ -1,0 +1,12 @@
+---
+- name: Add toolbox integration to bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED - toolbox flatpak aliases to spawn processes outside of toolbox"
+    block: |
+      if [ -n "${TOOLBOX_PATH+x}" ]; then
+        # flatpak-spawn does work inside toolbox/podman as it uses dbus communication that is already enabled in toolbox
+         alias podman='flatpak-spawn --host podman'
+      fi
+    create: true
+    insertafter: EOF
