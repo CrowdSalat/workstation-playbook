@@ -1,0 +1,46 @@
+---
+- name: Select shell executable for mise commands
+  ansible.builtin.set_fact:
+    package_manager_mise_shell_executable: >-
+      {{ '/bin/zsh' if ansible_facts["system"] == "Darwin" else '/bin/bash' }}
+
+- name: Set mise binary path
+  ansible.builtin.set_fact:
+    package_manager_mise_bin: "{{ ansible_facts['env']['HOME'] }}/.local/bin/mise"
+
+- name: Check mise installation
+  ansible.builtin.stat:
+    path: "{{ package_manager_mise_bin }}"
+  register: package_manager_mise_bin_stat
+
+- name: Install mise when missing
+  ansible.builtin.shell: curl https://mise.run | sh
+  when: not package_manager_mise_bin_stat.stat.exists
+  register: package_manager_mise_bootstrap
+  changed_when: package_manager_mise_bootstrap.rc == 0
+  failed_when: package_manager_mise_bootstrap.rc != 0
+  environment:
+    HOME: "{{ ansible_facts['env']['HOME'] }}"
+  args:
+    executable: "{{ package_manager_mise_shell_executable }}"
+    creates: "{{ package_manager_mise_bin }}"
+
+- name: Ensure mise activation is present in shell configs
+  ansible.builtin.blockinfile:
+    path: "{{ rc_file.path }}"
+    marker: "# {mark} ANSIBLE MANAGED - mise"
+    block: |
+      eval "$(~/.local/bin/mise activate {{ rc_file.name }})"
+    create: true
+    insertafter: EOF
+  loop: "{{ shell_rc_files }}"
+  loop_control:
+    loop_var: rc_file
+
+- name: "Install mise tool: {{ item }}"
+  ansible.builtin.command: "{{ package_manager_mise_bin }} use --global {{ item }}"
+  loop: "{{ package_manager_mise_tools }}"
+  register: package_manager_mise_install_results
+  changed_when: package_manager_mise_install_results.rc == 0
+  args:
+    executable: "{{ package_manager_mise_shell_executable }}"

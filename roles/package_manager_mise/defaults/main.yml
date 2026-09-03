@@ -1,0 +1,4 @@
+---
+# Tools to install and set as global defaults via mise.
+# Format: "name@version" (e.g. "go@1.24.0")
+package_manager_mise_tools: []
