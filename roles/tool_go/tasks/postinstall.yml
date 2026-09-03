@@ -1,22 +1,10 @@
 ---
-- name: Add Go bin directory to PATH in shell configs
-  ansible.builtin.blockinfile:
-    path: "{{ rc_file.path }}"
-    marker: "# {mark} ANSIBLE MANAGED - go"
-    block: |
-      export PATH="{{ tool_go_gopath }}/bin:$PATH"
-    create: true
-    insertafter: EOF
-  loop: "{{ shell_rc_files }}"
-  loop_control:
-    loop_var: rc_file
-
 - name: Install Go tools
   ansible.builtin.command:
-    cmd: "go install {{ item }}"
+    cmd: "{{ ansible_facts['env']['HOME'] }}/.local/bin/mise exec -- go install {{ item }}"
   loop: "{{ tool_go_tools }}"
   register: tool_go_install_result
   changed_when: tool_go_install_result.rc == 0
   environment:
     GOPATH: "{{ ansible_facts['env']['HOME'] }}/go"
-    PATH: "{{ ansible_facts['env']['HOME'] }}/go/bin:{{ ansible_facts['env']['PATH'] }}:/opt/homebrew/bin:/usr/local/bin"
+    PATH: "{{ ansible_facts['env']['HOME'] }}/go/bin:{{ ansible_facts['env']['PATH'] }}"

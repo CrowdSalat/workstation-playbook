@@ -1,11 +1,9 @@
 ---
 tool_go_gopath: "{{ ansible_facts['env']['HOME'] }}/go"
 
-tool_go_macos_brew_formulae:
-  - go
-
-tool_go_linux_dnf_packages:
-  - golang
+tool_go_mise_tools:
+  - go@latest
+  - make@latest
 
 tool_go_tools:
   - golang.org/x/tools/gopls@latest

@@ -1,11 +1,9 @@
 ---
-- name: Install Go on Linux
-  ansible.builtin.include_tasks: install-linux.yml
-  when: ansible_facts["system"] == "Linux"
-
-- name: Install Go on macOS
-  ansible.builtin.include_tasks: install-mac.yml
-  when: ansible_facts["system"] == "Darwin"
+- name: Install Go via mise package manager role
+  ansible.builtin.include_role:
+    name: package_manager_mise
+  vars:
+    package_manager_mise_tools: "{{ tool_go_mise_tools }}"
 
 - name: Install Go tools
   ansible.builtin.include_tasks: postinstall.yml
