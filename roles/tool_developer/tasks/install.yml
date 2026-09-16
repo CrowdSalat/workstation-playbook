@@ -13,14 +13,14 @@
 
 - name: Check mise installation
   ansible.builtin.stat:
-    path: "{{ tool_developer_mise_bin }}"
+    path: "{{ tool_developer_home }}/.local/bin/mise"
   register: tool_developer_mise_stat
 
 - name: Install mise when missing
   ansible.builtin.shell: curl https://mise.run | sh
   args:
     executable: /bin/bash
-    creates: "{{ tool_developer_mise_bin }}"
+    creates: "{{ tool_developer_home }}/.local/bin/mise"
   environment:
     HOME: "{{ tool_developer_home }}"
   when: not tool_developer_mise_stat.stat.exists
@@ -30,7 +30,7 @@
 - name: Enable mise activation in interactive rc files
   ansible.builtin.blockinfile:
     path: "{{ rc_file.path }}"
-    marker: "{{ tool_developer_activate_marker }}"
+    marker: "# {mark} ANSIBLE MANAGED - tool_developer mise activate"
     block: |
       eval "$(~/.local/bin/mise activate {{ rc_file.name }})"
     create: true
@@ -41,7 +41,7 @@
 - name: Add mise shims for non-interactive and login shells
   ansible.builtin.blockinfile:
     path: "{{ profile_file.path }}"
-    marker: "{{ tool_developer_shims_marker }}"
+    marker: "# {mark} ANSIBLE MANAGED - tool_developer mise shims"
     block: |
       eval "$(~/.local/bin/mise activate {{ profile_file.name }} --shims)"
     create: true
@@ -49,8 +49,8 @@
   loop_control:
     loop_var: profile_file
 
-- name: Template global mise config
-  ansible.builtin.template:
-    src: config.toml.j2
+- name: Deploy global mise config
+  ansible.builtin.copy:
+    src: config.toml
     dest: "{{ tool_developer_home }}/.config/mise/config.toml"
     mode: '0644'

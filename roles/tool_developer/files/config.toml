@@ -1,0 +1,7 @@
+# Global mise config - managed by Ansible (tool_developer).
+# Edit this file in the repo directly; `mise use --global` writes are
+# overwritten on the next playbook run.
+
+[tools]
+terraform = "latest"
+bat = "0.26.1"

@@ -1,13 +1,7 @@
 ---
 # Standalone mise test role: bootstraps mise, wires interactive activation
 # into rc files and non-interactive shims into profile files, then manages
-# the global mise config. Deliberately does NOT delegate to a
-# package_manager_* role — this is the self-contained setup under test.
+# the global mise config from files/config.toml. Deliberately does NOT
+# delegate to a package_manager_* role — this is the self-contained setup
+# under test.
 tool_developer_home: "{{ ansible_facts['env']['HOME'] }}"
-tool_developer_mise_bin: "{{ tool_developer_home }}/.local/bin/mise"
-tool_developer_activate_marker: "# {mark} ANSIBLE MANAGED - tool_developer mise activate"
-tool_developer_shims_marker: "# {mark} ANSIBLE MANAGED - tool_developer mise shims"
-
-# Global mise config tools: tool name -> version selector.
-tool_developer_global_tools:
-  terraform: latest
