@@ -1,7 +1,0 @@
-# Global mise config - managed by Ansible (tool_developer).
-# https://mise.jdx.dev/configuration.html#global-config-config-toml
-
-[tools]
-{% for tool, version in tool_developer_global_tools.items() %}
-{{ tool }} = "{{ version }}"
-{% endfor %}
