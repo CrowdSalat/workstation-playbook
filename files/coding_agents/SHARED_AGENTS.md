@@ -24,14 +24,51 @@ Examples:
 ## Container Tools
 
 - **Prefer Podman over Docker** — Use `podman` commands instead of `docker` unless Docker is explicitly required by the project. Default to Podman-compatible solutions.
-- **Container Registry** — Always push images to `docker.io` (Docker Hub) as the default registry.
-- **Multi-Architecture Builds** — Build images for both AMD64 (x86_64) and ARM64. AMD64 is the **primary target and must always be built**. ARM64 should be included whenever possible.
-- **Multi-Arch Workflow** — Use `--manifest` (not `-t`) to build a proper manifest list, and `podman manifest push` (not `podman push`) to push it. Using `-t` with multiple platforms silently produces only a single-arch image.
-  - *Build:* `podman build --platform linux/amd64,linux/arm64 --manifest docker.io/username/image:tag .`
-  - *Fallback (If ARM64 fails/is blocked):* `podman build --platform linux/amd64 --manifest docker.io/username/image:tag .`
-  - *Push:* `podman manifest push --all docker.io/username/image:tag docker://docker.io/username/image:tag`
-  - *Cleanup (optional):* `podman manifest rm docker.io/username/image:tag`
-- **Version Safety** — Before building and pushing, check whether the target tag already exists in the registry: `podman manifest inspect docker://docker.io/username/image:tag`. If it exists, do not overwrite it — bump to the next available version or ask the user which version to use.
+- **Registry** — Publish images to the repository's GitHub Container Registry: `ghcr.io/<owner>/<repo>/<name>:<tag>`.
+- **Publish modes** (driven by GitHub Actions):
+  - *Tag `v*` (semver):* versioned release image.
+  - *`main` push:* commit-sha build.
+  - *Latest build:* additionally tagged `:latest`.
+- **Published images are multi-arch** (AMD64 + ARM64) so both the x86_64 cluster and the ARM64 Mac pull without rebuilding; use native runners in Actions to keep builds fast.
+- **Local build is fast and single-arch** — target only the host platform, no emulation: `podman build -t localhost/<name>:<tag> .`. Local push is fine for quick tests but normally not needed; before tagging an existing release, check `podman manifest inspect docker://ghcr.io/<owner>/<repo>/<name>:<tag>`.
+
+**Actions example** — multi-arch publish to GHCR:
+
+```yaml
+# .github/workflows/container.yml
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+permissions:
+  packages: write
+env:
+  IMAGE: ghcr.io/${{ github.repository }}/<name>
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha
+      - uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+```
 
 ## Container Image Guidelines
 
