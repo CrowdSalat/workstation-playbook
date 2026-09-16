@@ -1,0 +1,6 @@
+---
+- name: Install mise and wire activation, shims, and global config
+  ansible.builtin.include_tasks: install.yml
+
+- name: Install global tools and verify
+  ansible.builtin.include_tasks: postinstall.yml
