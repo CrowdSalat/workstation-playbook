@@ -1,0 +1,38 @@
+---
+- name: Ensure gh bash completion directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.local/share/bash-completion/completions"
+    state: directory
+    mode: '0755'
+
+- name: Generate gh bash completion
+  ansible.builtin.shell: |
+    {{ ansible_facts['env']['HOME'] }}/.local/bin/mise exec -- gh completion -s bash \
+      > {{ ansible_facts['env']['HOME'] }}/.local/share/bash-completion/completions/gh
+  args:
+    creates: "{{ ansible_facts['env']['HOME'] }}/.local/share/bash-completion/completions/gh"
+
+- name: Ensure gh zsh completion directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.zfunc"
+    state: directory
+    mode: '0755'
+
+- name: Generate gh zsh completion
+  ansible.builtin.shell: |
+    {{ ansible_facts['env']['HOME'] }}/.local/bin/mise exec -- gh completion -s zsh \
+      > {{ ansible_facts['env']['HOME'] }}/.zfunc/_gh
+  args:
+    creates: "{{ ansible_facts['env']['HOME'] }}/.zfunc/_gh"
+
+- name: Enable zsh completion in zsh rc files
+  ansible.builtin.blockinfile:
+    path: "{{ rc_file.path }}"
+    marker: "# {mark} ANSIBLE MANAGED - gh zsh completion"
+    block: |
+      fpath=({{ ansible_facts['env']['HOME'] }}/.zfunc $fpath)
+      autoload -Uz compinit && compinit
+    create: false
+  loop: "{{ shell_rc_files | selectattr('name', 'equalto', 'zsh') | list }}"
+  loop_control:
+    loop_var: rc_file

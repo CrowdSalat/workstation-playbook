@@ -1,0 +1,9 @@
+---
+- name: Install gh CLI via mise package manager role
+  ansible.builtin.include_role:
+    name: package_manager_mise
+  vars:
+    package_manager_mise_tools: "{{ tool_gh_mise_tools }}"
+
+- name: Run gh CLI postinstall configuration
+  ansible.builtin.include_tasks: postinstall.yml

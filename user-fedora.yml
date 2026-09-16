@@ -15,6 +15,7 @@
       - tool_claude_code
       - tool_opencode
       - tool_pi
+      - tool_gh
       - config_alias
       - tool_starship
       - tool_ghostty

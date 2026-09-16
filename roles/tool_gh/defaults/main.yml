@@ -1,0 +1,6 @@
+---
+# Global GitHub CLI. Installed via mise (aqua:cli/cli backend) as the
+# first mise test case. Auth stays manual: `gh auth login` (interactive)
+# or a GH_TOKEN injected via Infisical/External Secrets.
+tool_gh_mise_tools:
+  - gh@latest
