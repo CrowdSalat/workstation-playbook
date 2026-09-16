@@ -73,11 +73,12 @@ jobs:
 ## Container Image Guidelines
 
 - **Use `Containerfile`, not `Dockerfile`** — Always name container build files `Containerfile` (OCI standard). Use `-f Containerfile` in build commands when needed.
-- **OpenShift `restricted-v2` SCC compatibility** — All container images must run under OpenShift's `restricted-v2` Security Context Constraint by default:
+- **OpenShift `restricted-v3` SCC compatibility (default)** — Target OpenShift's `restricted-v3` SCC by default; drop to a lower SCC (e.g. `restricted-v2`, `nonroot-v2`) only when there is a concrete reason, and justify it explicitly. `restricted-v3` runs pods in a Linux user namespace (`hostUsers: false`), so the container's UID (even 0) is mapped to an unprivileged host UID:
   - **No hardcoded UIDs** — OpenShift assigns a random UID at runtime. Never `chown` to a fixed UID.
   - **Use GID 0 (root group)** — OpenShift always assigns GID 0. Make writable directories group-accessible: `chmod 775 <dir> && chgrp 0 <dir>`.
-  - **Set a non-root default USER** — Use `USER 65534:0` (`nobody` with root group) as the default. OpenShift overrides the UID but keeps GID 0.
-  - **Avoid privileged operations at runtime** — No host mounts, no `SYS_ADMIN`, no `hostNetwork` unless technically required. If a capability or privilege escalation is needed, flag it explicitly and explain why it cannot be avoided.
+  - **Set a non-root default USER** — Use `USER 65534:0` (`nobody` with root group) as the default. The UID is overridden by the runtime; a non-root `USER` keeps the image portable to `restricted-v2`, `restricted`, and plain Kubernetes (PSA restricted).
+  - **Do not assume host-root privileges** — Inside the user namespace "root" is unprivileged on the host. No `SYS_ADMIN`, `hostNetwork`, unmasked `/proc`, or `setuid`/`setgid` binary reliance; flag any needed capability or privilege escalation explicitly.
+  - **Keep images lean and secret-free** — Multi-stage builds with a `.dockerignore`, exec-form `ENTRYPOINT`/`CMD` (app as PID 1, receives signals), no secrets baked in or leaked via `LABEL`/`ENV`.
 
 ## Tool Installation Philosophy
 
