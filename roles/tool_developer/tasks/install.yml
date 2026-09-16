@@ -54,3 +54,8 @@
     src: config.toml
     dest: "{{ tool_developer_home }}/.config/mise/config.toml"
     mode: '0644'
+
+- name: Install global tools from mise config
+  ansible.builtin.command: "{{ tool_developer_home }}/.local/bin/mise install"
+  register: tool_developer_mise_install
+  changed_when: false
