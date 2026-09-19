@@ -5,3 +5,7 @@
 [tools]
 terraform = "latest"
 bat = "0.26.1"
+fd = "latest"
+jq = "latest"
+ripgrep = "latest"
+yq = "latest"
