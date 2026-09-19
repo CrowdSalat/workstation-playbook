@@ -4,7 +4,7 @@
 
 [tools]
 terraform = "latest"
-bat = "0.26.1"
+bat = "latest"
 fd = "latest"
 jq = "latest"
 ripgrep = "latest"
