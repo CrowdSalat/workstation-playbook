@@ -4,9 +4,3 @@
     path: "{{ ansible_env.HOME }}/.pi/agent"
     state: directory
     mode: '0755'
-
-- name: Deploy Pi global agent rules
-  ansible.builtin.copy:
-    src: "{{ playbook_dir }}/files/coding_agents/SHARED_AGENTS.md"
-    dest: "{{ ansible_env.HOME }}/.pi/agent/AGENTS.md"
-    mode: '0644'

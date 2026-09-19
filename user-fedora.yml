@@ -21,6 +21,7 @@
       - tool_ghostty
       - tool_podman
       - tool_cursor
+      - config_agents_harnesses
       - tool_flatseal
       - tool_obsidian
       - tool_obs_studio

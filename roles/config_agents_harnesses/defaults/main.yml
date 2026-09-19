@@ -1,0 +1,20 @@
+---
+agents_harness_targets:
+  - name: opencode
+    check: "{{ ansible_env.HOME }}/.config/opencode"
+    rules_name: AGENTS.md
+    enabled: true
+  - name: pi
+    check: "{{ ansible_env.HOME }}/.pi/agent"
+    rules_name: AGENTS.md
+    enabled: true
+  - name: claude
+    check: "{{ ansible_env.HOME }}/.claude"
+    rules_name: CLAUDE.md
+    enabled: true
+  - name: cursor
+    check: "{{ ansible_env.HOME }}/ws/.cursor/rules"
+    rules_name: coding-standards.mdc
+    enabled: true
+
+agents_harness_universal_skills: "{{ ansible_env.HOME }}/.agents/skills"

@@ -1,0 +1,63 @@
+---
+- name: Detect installed agent harnesses
+  ansible.builtin.stat:
+    path: "{{ harness.check }}"
+  loop: "{{ agents_harness_targets | selectattr('enabled') | list }}"
+  loop_control:
+    loop_var: harness
+  register: harness_dirs
+
+- name: Deploy shared agent rules to installed harnesses
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/AGENTS.md"
+    dest: "{{ harness.harness.check }}/{{ harness.harness.rules_name }}"
+    mode: '0644'
+  loop: "{{ harness_dirs.results | selectattr('stat.exists') | list }}"
+  loop_control:
+    loop_var: harness
+
+- name: Check whether claude is installed
+  ansible.builtin.set_fact:
+    agents_harness_claude: "{{ harness_dirs.results
+      | selectattr('stat.exists')
+      | selectattr('harness.name', 'eq', 'claude')
+      | list | length > 0 }}"
+
+- name: Check bundled skills directory
+  ansible.builtin.stat:
+    path: "{{ role_path }}/files/skills"
+  register: agents_skills_src
+
+- name: Ensure universal agent skills directory exists
+  ansible.builtin.file:
+    path: "{{ agents_harness_universal_skills }}"
+    state: directory
+    mode: '0755'
+  when: agents_skills_src.stat.exists
+
+- name: Deploy skills to universal agent location
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/skills/"
+    dest: "{{ agents_harness_universal_skills }}"
+    mode: '0644'
+    directory_mode: '0755'
+  when: agents_skills_src.stat.exists
+
+- name: Ensure claude skills directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.claude/skills"
+    state: directory
+    mode: '0755'
+  when:
+    - agents_skills_src.stat.exists
+    - agents_harness_claude
+
+- name: Deploy skills to claude
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/skills/"
+    dest: "{{ ansible_env.HOME }}/.claude/skills"
+    mode: '0644'
+    directory_mode: '0755'
+  when:
+    - agents_skills_src.stat.exists
+    - agents_harness_claude

@@ -72,7 +72,7 @@ jobs:
 
 ## Container Image Guidelines
 
-- **Use `Containerfile`, not `Dockerfile`** — Always name container build files `Containerfile` (OCI standard). Use `-f Containerfile` in build commands when needed.
+- **Use `Containerfile`, not `Dockerfile`**- Use `-f Containerfile` in build commands when needed.
 - **OpenShift `restricted-v3` SCC compatibility (default)** — Target OpenShift's `restricted-v3` SCC by default; drop to a lower SCC (e.g. `restricted-v2`, `nonroot-v2`) only when there is a concrete reason, and justify it explicitly. `restricted-v3` runs pods in a Linux user namespace (`hostUsers: false`), so the container's UID (even 0) is mapped to an unprivileged host UID:
   - **No hardcoded UIDs** — OpenShift assigns a random UID at runtime. Never `chown` to a fixed UID.
   - **Use GID 0 (root group)** — OpenShift always assigns GID 0. Make writable directories group-accessible: `chmod 775 <dir> && chgrp 0 <dir>`.

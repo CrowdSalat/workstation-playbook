@@ -4,9 +4,3 @@
     path: "{{ ansible_env.HOME }}/.config/opencode"
     state: directory
     mode: '0755'
-
-- name: Deploy OpenCode global agent rules
-  ansible.builtin.copy:
-    src: "{{ playbook_dir }}/files/coding_agents/SHARED_AGENTS.md"
-    dest: "{{ ansible_env.HOME }}/.config/opencode/AGENTS.md"
-    mode: '0644'

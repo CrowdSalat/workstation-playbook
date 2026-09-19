@@ -52,6 +52,19 @@ conditions, split that phase into platform files and include them directly from
   Prefer enabling completion during tool postinstall so completion config stays
   close to the owning tool behavior.
 
+## Agent harness configuration ownership
+
+- Shared agent rules and skills for AI coding harnesses live in
+  `config_agents_harnesses`, not in `tool_*` roles.
+- `tool_*` roles only scaffold their harness config directory; the config role
+  deploys the shared `AGENTS.md` content to whichever harnesses are installed
+  (detected by existing config directory) plus universal skills to
+  `~/.agents/skills`.
+- `config_agents_harnesses` must run after the installed `tool_*` harness roles
+  in `roles_host`, because target directories are the detection signal.
+- Tool-specific config that a role already owns (for example
+  `~/.claude/settings.json` in `tool_claude_code`) stays in that role.
+
 ## Package manager role behavior
 
 - Package manager roles should do both:
