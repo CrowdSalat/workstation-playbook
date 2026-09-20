@@ -3,9 +3,11 @@
 # overwritten on the next playbook run.
 
 [tools]
-terraform = "latest"
+argocd = "latest"
 bat = "latest"
 fd = "latest"
+gh = "latest"
 jq = "latest"
 ripgrep = "latest"
+terraform = "latest"
 yq = "latest"
