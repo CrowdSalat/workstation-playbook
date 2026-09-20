@@ -23,6 +23,17 @@ This file defines high-level guidance for agents working inside this workspace.
 - This enables proper syntax validation, clean git diffs, native editor support, and keeps roles modular and self-contained.
 - Reserve inline content for small snippets (< 10 lines) or when the content is genuinely task-specific logic.
 
+## Agent harness content
+
+- Central `AGENTS.md` (`roles/config_agents_harnesses/files/AGENTS.md`) carries only always-on guardrails: git commit discipline, code quality/safety, editing behavior. Everything procedural belongs in skills.
+- Skills live in `roles/config_agents_harnesses/files/skills/<name>/SKILL.md` and hold on-demand how-to playbooks (containers, changelog, openshift-deploy, tool-installation).
+- Skill style is brief and checklist-like:
+  - Imperative bullets and exact commands over prose.
+  - Keep every hard constraint, file path, and copy-paste template (e.g. workflow YAML).
+  - No lead-in sentences; state load-bearing "why" only where it changes behavior.
+  - Frontmatter: `name` matches the folder; `description` in third person, what + when, front-loaded trigger keywords.
+- Deploy via focused run of `config_agents_harnesses`; verify content landed in `~/.agents/skills` and `~/.claude/skills` and the central `AGENTS.md` was updated.
+
 ## Playbook execution model
 
 - Fedora uses split role lists:
