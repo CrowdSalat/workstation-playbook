@@ -1,0 +1,39 @@
+---
+- name: Ensure directories for OCI CLI installation exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ tool_oci_cache_dir }}"
+    - "{{ tool_oci_exec_dir }}"
+
+- name: Check if OCI CLI is already installed
+  ansible.builtin.stat:
+    path: "{{ tool_oci_exec_dir }}/oci"
+  register: tool_oci_binary
+
+- name: Download OCI CLI installer script
+  ansible.builtin.get_url:
+    url: "{{ tool_oci_installer_url }}"
+    dest: "{{ tool_oci_cache_dir }}/install.sh"
+    mode: "0755"
+    force: true
+  when: not tool_oci_binary.stat.exists
+
+- name: Install OCI CLI via official installer
+  ansible.builtin.command: >-
+    bash {{ tool_oci_cache_dir }}/install.sh
+    --accept-all-defaults
+    --install-dir {{ tool_oci_install_dir }}
+    --exec-dir {{ tool_oci_exec_dir }}
+    {{ ('--oci-cli-version ' ~ tool_oci_version) if tool_oci_version else '' }}
+  register: tool_oci_install
+  changed_when: tool_oci_install.rc == 0
+  failed_when: tool_oci_install.rc != 0
+  when: not tool_oci_binary.stat.exists
+
+- name: Verify OCI CLI version
+  ansible.builtin.command: "{{ tool_oci_exec_dir }}/oci --version"
+  changed_when: false
+  failed_when: false

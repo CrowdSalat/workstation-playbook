@@ -29,6 +29,7 @@
       - tool_chromium
       - tool_vscodium
       - tool_gcp
+      - tool_oci
       - tool_uvcc
       - tool_gnome_extensions
       - config_gnome_shortcuts

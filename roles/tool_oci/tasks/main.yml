@@ -1,0 +1,3 @@
+---
+- name: Install Oracle Cloud Infrastructure CLI
+  ansible.builtin.include_tasks: install.yml

@@ -52,6 +52,16 @@ conditions, split that phase into platform files and include them directly from
   Prefer enabling completion during tool postinstall so completion config stays
   close to the owning tool behavior.
 
+## Playbook registration
+
+- Register new roles in the playbooks:
+  - `user-fedora.yml`: `roles_host` for host tools, `roles_toolbox` for toolbox
+    tools.
+  - `user-macos.yml`: `roles_host` only (no toolbox).
+- Toolbox context also needs `toolbox_name`; toolbox prerequisites run only when
+  `roles_toolbox | length > 0`.
+- Keep related roles grouped in the lists (for example cloud CLIs together).
+
 ## Agent harness configuration ownership
 
 - Shared agent rules and skills for AI coding harnesses live in
