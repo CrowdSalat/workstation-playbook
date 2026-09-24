@@ -1,0 +1,57 @@
+---
+- name: Require API account values for OCI config
+  ansible.builtin.assert:
+    that:
+      - tool_oci_user_ocid | length > 0
+      - tool_oci_tenancy_ocid | length > 0
+      - tool_oci_region | length > 0
+    fail_msg: >-
+      tool_oci_config_enabled requires tool_oci_user_ocid,
+      tool_oci_tenancy_ocid and tool_oci_region to be set.
+
+- name: Ensure OCI config directory exists
+  ansible.builtin.file:
+    path: "{{ tool_oci_config_dir }}"
+    state: directory
+    mode: "0700"
+
+- name: Generate OCI API signing key pair when missing
+  ansible.builtin.shell: |
+    set -euo pipefail
+    umask 077
+    openssl genrsa -out {{ tool_oci_key_path }} 2048
+    openssl rsa -pubout -in {{ tool_oci_key_path }} -out {{ tool_oci_public_key_path }}
+  args:
+    creates: "{{ tool_oci_key_path }}"
+    executable: /bin/bash
+  register: tool_oci_key_generate
+
+- name: Restrict OCI API signing key permissions
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0600"
+  loop:
+    - "{{ tool_oci_key_path }}"
+    - "{{ tool_oci_public_key_path }}"
+
+- name: Compute OCI API signing key fingerprint
+  ansible.builtin.shell: >-
+    openssl rsa -pubout -in {{ tool_oci_key_path }} -outform DER
+    | openssl md5 -c
+  args:
+    executable: /bin/bash
+  register: tool_oci_fingerprint_raw
+  changed_when: false
+
+- name: Write OCI CLI config file
+  ansible.builtin.template:
+    src: config.j2
+    dest: "{{ tool_oci_config_dir }}/config"
+    mode: "0600"
+
+- name: Remind to upload the public key to the OCI console
+  ansible.builtin.debug:
+    msg: >-
+      Upload {{ tool_oci_public_key_path }} to your user's API Keys in the OCI
+      console to enable API signing.
+  when: tool_oci_key_generate.changed

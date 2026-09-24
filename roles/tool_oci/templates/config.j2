@@ -1,0 +1,6 @@
+[DEFAULT]
+user={{ tool_oci_user_ocid }}
+fingerprint={{ tool_oci_fingerprint_raw.stdout | regex_replace('^.*=', '') | trim }}
+tenancy={{ tool_oci_tenancy_ocid }}
+region={{ tool_oci_region }}
+key_file={{ tool_oci_key_path }}

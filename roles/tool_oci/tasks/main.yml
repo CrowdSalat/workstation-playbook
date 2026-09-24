@@ -1,3 +1,7 @@
 ---
 - name: Install Oracle Cloud Infrastructure CLI
   ansible.builtin.include_tasks: install.yml
+
+- name: Configure Oracle Cloud Infrastructure CLI account
+  ansible.builtin.include_tasks: postinstall.yml
+  when: tool_oci_config_enabled | bool

@@ -4,3 +4,12 @@ tool_oci_cache_dir: "{{ ansible_facts['env']['HOME'] }}/.cache/tool_oci"
 tool_oci_install_dir: "{{ ansible_facts['env']['HOME'] }}/lib/oracle-cli"
 tool_oci_exec_dir: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
 tool_oci_version: ""
+
+tool_oci_config_dir: "{{ ansible_facts['env']['HOME'] }}/.oci"
+tool_oci_key_name: "oci_api_key"
+tool_oci_key_path: "{{ tool_oci_config_dir }}/{{ tool_oci_key_name }}.pem"
+tool_oci_public_key_path: "{{ tool_oci_config_dir }}/{{ tool_oci_key_name }}_public.pem"
+tool_oci_config_enabled: false
+tool_oci_user_ocid: ""
+tool_oci_tenancy_ocid: ""
+tool_oci_region: ""
