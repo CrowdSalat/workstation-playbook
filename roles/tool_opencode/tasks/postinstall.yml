@@ -4,3 +4,9 @@
     path: "{{ ansible_env.HOME }}/.config/opencode"
     state: directory
     mode: '0755'
+
+- name: Deploy OpenCode opencode.json
+  ansible.builtin.copy:
+    src: opencode.json
+    dest: "{{ ansible_env.HOME }}/.config/opencode/opencode.json"
+    mode: '0644'
