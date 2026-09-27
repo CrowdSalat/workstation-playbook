@@ -1,6 +1,6 @@
 ---
 name: tool-installation
-description: Use when installing, updating, or adding tools to a workstation, or running this Ansible playbook. Trigger keywords: install, brew, dnf, flatpak, sdkman, mise, mise.toml, pipx, toolbox, apk, apt, ansible-playbook, tool role, new tool.
+description: "Use when installing, updating, or adding tools to a workstation, or running this Ansible playbook. Trigger keywords: install, brew, dnf, flatpak, sdkman, mise, mise.toml, pipx, toolbox, apk, apt, ansible-playbook, tool role, new tool."
 ---
 
 # Installing tools

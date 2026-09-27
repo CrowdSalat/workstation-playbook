@@ -1,6 +1,6 @@
 ---
 name: changelog
-description: Use when generating or updating CHANGELOG.md with git-cliff, preparing a release or version tag, or deciding whether a change needs a changelog entry. Trigger keywords: changelog, CHANGELOG.md, git-cliff, release notes, version bump, tag v.
+description: "Use when generating or updating CHANGELOG.md with git-cliff, preparing a release or version tag, or deciding whether a change needs a changelog entry. Trigger keywords: changelog, CHANGELOG.md, git-cliff, release notes, version bump, tag v."
 ---
 
 # Changelog
