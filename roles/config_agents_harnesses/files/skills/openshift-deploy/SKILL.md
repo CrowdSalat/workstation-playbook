@@ -1,6 +1,6 @@
 ---
 name: openshift-deploy
-description: Use when deploying applications to the OpenShift cluster, iterating fast with oc, or updating real deployments through Argo CD / the GitOps repo at ~/ws/crowdsalat/ocp-gitops. Trigger keywords: oc, openshift, ocp, deploy to cluster, rollout, argo, gitops, argocd, image stream, namespace on cluster.
+description: "Use when deploying applications to the OpenShift cluster, iterating fast with oc, or updating real deployments through Argo CD / the GitOps repo at ~/ws/crowdsalat/ocp-gitops. Trigger keywords: oc, openshift, ocp, deploy to cluster, rollout, argo, gitops, argocd, image stream, namespace on cluster."
 ---
 
 # OpenShift deploy
@@ -30,7 +30,7 @@ Argo CD (OpenShift GitOps) is the state carrier. Manifests live in the app repo;
 4. Toggle autosync back **on** when done.
 
 ## Outer loop (tagged release) — autosync ON
-1. Publish image tag (containers skill), e.g. `ghcr.io/<owner>/<repo>/<name>:0.7.1`.
+1. Publish image tag (container-publish skill), e.g. `ghcr.io/<owner>/<repo>/<name>:0.7.1`.
 2. Bump `image:` in the app's manifest — project repo (default) or `gitops/applications/<app>/` (legacy) — commit + push.
 3. Pick up: autosync on, or `argocd app sync <app>`.
 4. Watch: `argocd app get <app>`, `oc get pods`.
