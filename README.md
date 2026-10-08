@@ -19,7 +19,7 @@ ansible-playbook -i inventory.yml user-macos.yml
 Use playbook variable overrides to run only selected roles.
 
 ```bash
-ansible-playbook -i inventory.yml user-fedora.yml -e '{"roles_host":["tool_vscodium"],"roles_toolbox":[]}'
+ansible-playbook -i inventory.yml user-fedora.yml -e '{"roles_host":["tool_developer"],"roles_toolbox":[]}'
 ```
 
 ## Install Ansible prerequisite
