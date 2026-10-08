@@ -5,34 +5,114 @@
     state: directory
     mode: "0755"
 
-- name: Download Starship binary archive
-  ansible.builtin.get_url:
-    url: "{{ tool_starship_url }}"
-    dest: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
-    mode: "0644"
-    force: true
+# Resolve the newest release from the /latest redirect rather than the GitHub
+# API, so repeated runs are not rate limited. `uri` flattens response headers
+# onto the result root, and following the redirect would drop `location`, so
+# stop at the 302 and read the tag from it.
+- name: Resolve newest Starship release when no version is pinned
+  ansible.builtin.uri:
+    url: "{{ tool_starship_releases_url }}/latest"
+    follow_redirects: none
+    status_code:
+      - 200
+      - 301
+      - 302
+  register: tool_starship_latest_release
+  changed_when: false
+  when: tool_starship_version | length == 0
 
-- name: Unarchive Starship into local bin
-  ansible.builtin.unarchive:
-    src: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
-    dest: "{{ tool_starship_local_bin }}"
-    remote_src: true
-    creates: "{{ tool_starship_local_bin }}/starship"
+- name: Determine Starship version to install
+  ansible.builtin.set_fact:
+    tool_starship_target_version: >-
+      {{ (tool_starship_version | length > 0)
+         | ternary(tool_starship_version,
+                   tool_starship_latest_release.location | default('')
+                   | regex_replace('^.*/tag/v?', '')) }}
 
-- name: Verify Starship binary was extracted
+- name: Fail when Starship version could not be resolved
+  ansible.builtin.assert:
+    that:
+      - tool_starship_target_version | length > 0
+      - tool_starship_target_version is match('^[0-9]+\.[0-9]+\.[0-9]+$')
+    fail_msg: >-
+      Invalid Starship version: tool_starship_version pin is
+      '{{ tool_starship_version }}' and the resolved target is
+      '{{ tool_starship_target_version }}'. Pin an explicit X.Y.Z version, or
+      leave tool_starship_version empty to track the newest release.
+
+- name: Build Starship download URL
+  ansible.builtin.set_fact:
+    tool_starship_archive_url: >-
+      {{ tool_starship_releases_url }}/download/v{{ tool_starship_target_version }}/{{ tool_starship_archive_name }}
+
+- name: Check for existing Starship binary
   ansible.builtin.stat:
     path: "{{ tool_starship_local_bin }}/starship"
   register: tool_starship_binary
 
-- name: Fail when Starship binary is missing
+- name: Read installed Starship version
+  ansible.builtin.command:
+    cmd: "{{ tool_starship_local_bin }}/starship --version"
+  register: tool_starship_installed
+  changed_when: false
+  failed_when: false
+  when: tool_starship_binary.stat.exists | default(false)
+
+# Install when the binary is missing or older than the target, so a fresh host
+# gets the newest release and an existing one is upgraded. A path-only check
+# (the unarchive `creates` guard) skips both and silently keeps the old binary.
+- name: Decide whether Starship must be installed
+  ansible.builtin.set_fact:
+    tool_starship_needs_install: >-
+      {{ not (tool_starship_binary.stat.exists | default(false))
+         or (tool_starship_installed.stdout_lines | default([]) | first | default(''))
+         != 'starship ' ~ tool_starship_target_version }}
+
+- name: Download Starship binary archive
+  ansible.builtin.get_url:
+    url: "{{ tool_starship_archive_url }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
+    mode: "0644"
+    force: true
+  when: tool_starship_needs_install
+
+- name: Unarchive Starship into local bin
+  # The upstream tarball is flat (single `starship` entry, no wrapping
+  # directory), so no --strip-components here: stripping would remove the
+  # filename itself and extract nothing while still exiting 0.
+  ansible.builtin.unarchive:
+    src: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
+    dest: "{{ tool_starship_local_bin }}"
+    remote_src: true
+  when: tool_starship_needs_install
+
+- name: Verify Starship binary was extracted
+  ansible.builtin.stat:
+    path: "{{ tool_starship_local_bin }}/starship"
+  register: tool_starship_binary_check
+
+# Re-read after install: tool_starship_installed holds the pre-install
+# version, so asserting against it would fail on every real upgrade.
+- name: Read installed Starship version after install
+  ansible.builtin.command:
+    cmd: "{{ tool_starship_local_bin }}/starship --version"
+  register: tool_starship_installed_check
+  changed_when: false
+  failed_when: false
+  when: tool_starship_binary_check.stat.exists | default(false)
+
+- name: Fail when Starship binary is missing or not the expected version
   ansible.builtin.assert:
     that:
-      - tool_starship_binary.stat.exists
-      - tool_starship_binary.stat.executable
+      - tool_starship_binary_check.stat.exists
+      - tool_starship_binary_check.stat.executable
+      - (tool_starship_installed_check.stdout_lines | default([]) | first | default(''))
+        == 'starship ' ~ tool_starship_target_version
     fail_msg: >-
-      Starship archive extracted without producing
-      {{ tool_starship_local_bin }}/starship
-    success_msg: "Starship binary present at {{ tool_starship_local_bin }}/starship"
+      Expected Starship {{ tool_starship_target_version }} at
+      {{ tool_starship_local_bin }}/starship but got
+      {{ tool_starship_installed_check.stdout_lines | default([]) | first | default('no binary') }}.
+    success_msg: "Starship {{ tool_starship_target_version }} installed at {{ tool_starship_local_bin }}/starship"
 
 - name: Remove Starship archive
   ansible.builtin.file:
