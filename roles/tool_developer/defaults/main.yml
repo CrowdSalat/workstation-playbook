@@ -5,3 +5,7 @@
 # delegate to a package_manager_* role — this is the self-contained setup
 # under test.
 tool_developer_home: "{{ ansible_facts['env']['HOME'] }}"
+
+tool_developer_pi_extensions:
+  - "npm:@ssweens/pi-vertex"
+  - "npm:pi-lmstudio"

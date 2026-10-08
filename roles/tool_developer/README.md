@@ -29,12 +29,17 @@ to a `package_manager_*` role; it is the self-contained mise setup.
   `files/config.toml`. Tools installed with `go install` used to land in
   `~/go/bin` (off PATH, recompiled every run); the mise `go:` backend puts
   them on shims instead.
+- Postinstall (`tasks/postinstall-pi.yml`): pi comes from the aqua registry
+  (`pi = "latest"`, native binary, no Node needed). It ensures `~/.pi/agent`
+  (the pi detector for `config_agents_harnesses`) and installs the extensions
+  listed in `tool_developer_pi_extensions`.
 
 ## Variables
 
-| Variable                 | Default                                   | Description                       |
-| ------------------------ | ----------------------------------------- | --------------------------------- |
-| `tool_developer_home`    | `{{ ansible_facts['env']['HOME'] }}`      | Home to wire shell files under.   |
+| Variable                       | Default                                     | Description                           |
+| ------------------------------ | ------------------------------------------- | ------------------------------------- |
+| `tool_developer_home`          | `{{ ansible_facts['env']['HOME'] }}`        | Home to wire shell files under.       |
+| `tool_developer_pi_extensions` | `[npm:@ssweens/pi-vertex, npm:pi-lmstudio]` | Extensions installed by `pi install`. |
 
 ## The mise integration model (gist of the design discussion)
 

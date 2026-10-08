@@ -1,0 +1,25 @@
+---
+- name: Ensure pi agent directory exists
+  ansible.builtin.file:
+    path: "{{ tool_developer_home }}/.pi/agent"
+    state: directory
+    mode: '0755'
+
+- name: Install configured pi extensions
+  ansible.builtin.shell: |
+    set -eo pipefail
+    mise="{{ tool_developer_home }}/.local/bin/mise"
+    if "$mise" exec -- pi list 2>/dev/null | "$mise" exec -- rg -F -- "{{ pi_extension }}" >/dev/null; then
+      echo NOCHANGE
+    else
+      "$mise" exec -- pi install "{{ pi_extension }}"
+      echo CHANGED
+    fi
+  loop: "{{ tool_developer_pi_extensions }}"
+  loop_control:
+    loop_var: pi_extension
+  register: tool_developer_pi_extension_install
+  changed_when: "'CHANGED' in (stdout | default(''))"
+  when: tool_developer_pi_extensions | length > 0
+  args:
+    executable: /bin/bash

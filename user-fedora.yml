@@ -14,7 +14,6 @@
       - tool_ssh_agent
       - tool_pre_commit
       - tool_claude_code
-      - tool_pi
       - config_alias
       - tool_starship
       - tool_ghostty

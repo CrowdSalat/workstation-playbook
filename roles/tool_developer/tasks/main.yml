@@ -7,3 +7,6 @@
 
 - name: Configure gh completions after mise install
   ansible.builtin.include_tasks: postinstall-gh.yml
+
+- name: Configure pi after mise install
+  ansible.builtin.include_tasks: postinstall-pi.yml

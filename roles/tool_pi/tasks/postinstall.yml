@@ -1,6 +1,0 @@
----
-- name: Ensure ~/.pi/agent directory exists
-  ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.pi/agent"
-    state: directory
-    mode: '0755'

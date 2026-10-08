@@ -17,6 +17,7 @@ infisical = "latest"
 jq = "latest"
 make = "latest"
 "npm:@opencode/cli" = { version = "latest", allow_builds = ["@opencode/cli"] }
+pi = "latest"
 ripgrep = "latest"
 terraform = "latest"
 yq = "latest"
