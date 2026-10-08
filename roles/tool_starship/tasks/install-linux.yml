@@ -17,8 +17,22 @@
     src: "{{ ansible_facts['env']['HOME'] }}/starship.tar.gz"
     dest: "{{ tool_starship_local_bin }}"
     remote_src: true
-    extra_opts: [--strip-components=1]
     creates: "{{ tool_starship_local_bin }}/starship"
+
+- name: Verify Starship binary was extracted
+  ansible.builtin.stat:
+    path: "{{ tool_starship_local_bin }}/starship"
+  register: tool_starship_binary
+
+- name: Fail when Starship binary is missing
+  ansible.builtin.assert:
+    that:
+      - tool_starship_binary.stat.exists
+      - tool_starship_binary.stat.executable
+    fail_msg: >-
+      Starship archive extracted without producing
+      {{ tool_starship_local_bin }}/starship
+    success_msg: "Starship binary present at {{ tool_starship_local_bin }}/starship"
 
 - name: Remove Starship archive
   ansible.builtin.file:
