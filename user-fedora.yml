@@ -15,7 +15,6 @@
       - tool_pre_commit
       - tool_claude_code
       - tool_pi
-      - tool_gh
       - config_alias
       - tool_starship
       - tool_ghostty
@@ -38,7 +37,6 @@
     roles_toolbox:
       - config_toolbox
       - tool_jvm
-      - tool_go
       - tool_cli_utils
 
   tasks:

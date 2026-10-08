@@ -21,6 +21,14 @@ to a `package_manager_*` role; it is the self-contained mise setup.
   restricted to that package (its postinstall downloads the native binary).
   Note: the v1 line (`opencode-ai`, GitHub releases) is still `latest` on npm
   as 1.x; do not switch back to the aqua `opencode` entry.
+- Postinstall (`tasks/postinstall-gh.yml`): generates `gh` bash/zsh
+  completions via `mise exec` into `~/.local/share/bash-completion/completions`
+  and `~/.zfunc`, and enables them in zsh rc files.
+- Go toolchain (`go`, `make`) and the Go tools (`gopls`, `goimports` via the
+  `go:` backend; `golangci-lint` as a registry binary) come from
+  `files/config.toml`. Tools installed with `go install` used to land in
+  `~/go/bin` (off PATH, recompiled every run); the mise `go:` backend puts
+  them on shims instead.
 
 ## Variables
 

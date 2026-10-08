@@ -4,3 +4,6 @@
 
 - name: Configure opencode after mise install
   ansible.builtin.include_tasks: postinstall-opencode.yml
+
+- name: Configure gh completions after mise install
+  ansible.builtin.include_tasks: postinstall-gh.yml
