@@ -20,11 +20,32 @@ description: "Use when installing, updating, or adding tools to a workstation, o
 
 - Globally useful: propose adding to an existing `tool_<name>` role (or a new one); on agreement add it and run the playbook in the same session.
 
+## Pick the channel first
+Run before writing any task:
+
+```bash
+mise registry | grep -E '^<tool>[[:space:]]'   # a hit means mise can own the binary
+```
+
+| Result | Do this |
+| --- | --- |
+| Registry hit | add `<tool> = "latest"` to `roles/tool_developer/files/config.toml`; stop |
+| Platform channel already owns it (flatpak, brew, rpm-ostree, SDKMAN, pipx) | keep it in the existing `tool_<name>` role |
+| Neither | write a full `tool_<name>` role |
+
+Registry hit **plus** playbook-owned config (settings file, completions, extensions, harness detector dir) = both halves:
+- `[tools]` entry in `roles/tool_developer/files/config.toml`
+- `roles/tool_developer/tasks/postinstall-<tool>.yml`, wired from `tasks/main.yml`
+
+Never create a `tool_<name>` role whose only job is a mise entry.
+
+Existing roles keep their channel — folding one into mise is its own commit.
+
 ## Add a global tool
 Prefer extending an existing `tool_<name>`; create a new role only when nothing fits.
 
 1. `tasks/main.yml` — install/postinstall phases; split by OS only when branching dominates.
-2. Follow `ROLE_CONVENTIONS.md` (phase layout, package manager helpers, CLI completion).
+2. Follow `ROLE_CONVENTIONS.md` (channel selection, phase layout, package manager helpers, CLI completion).
 3. Register: Fedora `user-fedora.yml` (`roles_host`, or `roles_toolbox` for toolbox tools); macOS `user-macos.yml` (`roles_host`).
 4. Toolbox context also needs `toolbox_name`; toolbox prereqs run only when `roles_toolbox | length > 0`.
 
@@ -33,6 +54,7 @@ Prefer extending an existing `tool_<name>`; create a new role only when nothing 
 - `package_manager_*`: install mechanics + manager readiness
 - `config_*`: cross-cutting config
 
+`mise` is not a `package_manager_*` role — it lives in `tool_developer` with the `[tools]` table it writes to.
 `package_manager_*` stay toolbox-agnostic; the playbook controls toolbox delegation.
 
 ## Run the playbook

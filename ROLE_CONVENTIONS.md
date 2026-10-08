@@ -1,6 +1,62 @@
-# Role conventions for `playbook-next`
+# Role conventions for `playbook`
 
 Use these conventions for `tool_<name>` roles.
+
+## Choosing an installation channel
+
+Decide the channel before writing any task. It is the first question, not an
+implementation detail to settle once tasks exist.
+
+1. **Does the tool have a mise registry entry?**
+
+   ```bash
+   mise registry | grep -E '^<tool>[[:space:]]'
+   ```
+
+   A hit means mise can own the binary: add `<tool> = "latest"` to
+   `roles/tool_developer/files/config.toml` and stop there.
+
+2. **Does a platform channel already own the install?** If the role goes
+   through `package_manager_flatpak`, `package_manager_brew`,
+   `package_manager_rpm_ostree`, `package_manager_sdkman`, or
+   `package_manager_pipx`, it stays there. mise does not replace flatpak, Homebrew
+   casks, COPR layering, SDKMAN candidates, or pipx apps.
+
+3. **Otherwise: a full `tool_<name>` role.** Use the vendor's supported path —
+   a `package_manager_*` helper when one fits, or direct modules (`get_url`,
+   `unarchive`, `uri`) for vendor installer scripts and release tarballs.
+
+`tool_developer` is the only mise entry point. It owns the mise bootstrap, shell
+activation, and the global `[tools]` table. There is deliberately **no**
+`package_manager_mise` role; the earlier one was removed as unreferenced.
+
+### mise owns the binary, a role owns the config
+
+mise declares versions and installs binaries. It configures nothing. So a tool
+whose configuration this playbook owns needs both halves:
+
+- the `[tools]` entry in `roles/tool_developer/files/config.toml`
+- a `tasks/postinstall-<tool>.yml` inside `tool_developer`, wired from its
+  `tasks/main.yml`, for every config file, completion, extension, or harness
+  detector directory
+
+That is how `gh`, `opencode`, and `pi` are handled: mise installs the binary,
+`tool_developer/tasks/postinstall-*.yml` owns the rest.
+
+A role whose only remaining job is configuration still stays a role. `tool_git`
+and `tool_vi` install nothing and are correct as they are.
+
+Do not create a `tool_<name>` role whose only job is to add a mise entry. That
+is exactly the shape `tool_go`, `tool_gh`, `tool_opencode`, and `tool_pi` had
+before they were folded into `tool_developer`.
+
+### New work is forward-only
+
+Existing roles keep the channel they have. `tool_claude_code` stays on
+`package_manager_npm`, `tool_jvm` on `package_manager_sdkman`,
+`tool_pre_commit` on `package_manager_pipx`. Folding one of them into mise is a
+deliberate refactor in its own commit, never a side effect of adding an
+unrelated tool.
 
 ## Priorities
 
@@ -48,9 +104,9 @@ conditions, split that phase into platform files and include them directly from
 - Keep each tool role self-contained.
 - A tool role should describe its own install + postinstall behavior end-to-end.
 - Use package manager roles as helpers, but keep control flow in the tool role.
-- CLI completion belongs in `tool_*` roles when available for that tool.
-  Prefer enabling completion during tool postinstall so completion config stays
-  close to the owning tool behavior.
+- CLI completion belongs in the role that owns the tool. For a mise-installed
+  tool that is `tool_developer/tasks/postinstall-<tool>.yml`; for a role-owned
+  install it is that role's postinstall.
 
 ## Playbook registration
 
@@ -88,6 +144,9 @@ conditions, split that phase into platform files and include them directly from
   - `package_manager_pipx`: bootstrap pipx when missing, ensure application path, then install packages
 - Tool roles may call package manager roles repeatedly; this is acceptable for
   readability.
+- `mise` is deliberately **not** one of these roles. It lives in `tool_developer`
+  because it also owns the global `[tools]` table that its installs write to.
+  See "Choosing an installation channel" above.
 
 ## Toolbox execution context
 

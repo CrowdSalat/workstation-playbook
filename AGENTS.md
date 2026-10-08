@@ -13,6 +13,18 @@ This file defines high-level guidance for agents working inside this workspace.
   - `tool_*`: user-facing tool intent (install + tool-specific config)
   - `package_manager_*`: installation mechanics and manager readiness
   - `config_*`: cross-cutting configuration not owned by one tool
+- Pick the installation channel before writing tasks. Prefer
+  `tool_developer` (mise) when the tool has a mise registry entry; keep
+  `package_manager_*` when a platform channel already owns the install
+  (flatpak, brew, rpm-ostree, SDKMAN, pipx); otherwise write a full
+  `tool_<name>` role.
+- `mise` lives in `tool_developer`, not in a `package_manager_*` role — it owns
+  the global `[tools]` table that its installs write to.
+- mise owns the binary; config, completions, and extensions stay with the role
+  that owns the tool.
+- Do not create a role whose only job is adding a mise entry.
+- Existing roles keep their current channel; folding one into mise is its own
+  commit.
 - Keep `package_manager_*` roles toolbox-agnostic.
 - Control toolbox execution context in playbooks (delegation), not inside PM roles.
 
@@ -56,8 +68,15 @@ This file defines high-level guidance for agents working inside this workspace.
 - Run syntax checks after structural changes.
 - Prefer focused test runs using role-list overrides to isolate behavior.
 - Escalate to broader runs only after focused runs pass.
+- After editing files that `config_agents_harnesses` deploys (the central
+  `AGENTS.md`, skills), tell the user to redeploy the role; verify the change by
+  reading the repo source, not the deployed copy.
+- Deleting a role that once wrote a `blockinfile` marker leaves that marker
+  behind in shell rc files. Flag it for the user to clean up by hand rather than
+  reaching into their home directory.
 
 ## Detailed conventions
 
-See `ROLE_CONVENTIONS.md` for detailed implementation rules (naming patterns,
-task file layout, toolbox model, SDKMAN item format).
+See `ROLE_CONVENTIONS.md` for detailed implementation rules (installation
+channel selection, naming patterns, task file layout, toolbox model, SDKMAN
+item format).

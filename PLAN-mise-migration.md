@@ -1,5 +1,12 @@
 # Plan: Migrate Node/npm and Java tooling from nvm/SDKMAN to mise
 
+> **Superseded in part.** `package_manager_mise` was removed as unreferenced; mise
+> now lives entirely in `tool_developer` with a static `files/config.toml`. The
+> phases below that plan to extend `package_manager_mise` (1, 2b, 2c, 3) need
+> re-reading against `ROLE_CONVENTIONS.md` → "Choosing an installation channel".
+> The channel-selection rule is forward-only: no existing role moves without a
+> deliberate refactor commit.
+
 ## Objective
 
 Consolidate per-language version managers onto a single one (`mise`), replacing:
