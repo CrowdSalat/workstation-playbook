@@ -49,6 +49,12 @@
   loop_control:
     loop_var: profile_file
 
+- name: Ensure mise config directory exists
+  ansible.builtin.file:
+    dest: "{{ tool_developer_home }}/.config/mise/"
+    state: directory
+    mode: '0755'
+
 - name: Deploy global mise config
   ansible.builtin.copy:
     src: config.toml
