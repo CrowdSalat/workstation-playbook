@@ -18,9 +18,8 @@ implementation detail to settle once tasks exist.
 
 2. **Does a platform channel already own the install?** If the role goes
    through `package_manager_flatpak`, `package_manager_brew`,
-   `package_manager_rpm_ostree`, `package_manager_sdkman`, or
-   `package_manager_pipx`, it stays there. mise does not replace flatpak, Homebrew
-   casks, COPR layering, SDKMAN candidates, or pipx apps.
+   `package_manager_rpm_ostree`, or `package_manager_pipx`, it stays there. mise
+   does not replace flatpak, Homebrew casks, COPR layering, or pipx apps.
 
 3. **Otherwise: a full `tool_<name>` role.** Use the vendor's supported path —
    a `package_manager_*` helper when one fits, or direct modules (`get_url`,
@@ -40,8 +39,20 @@ whose configuration this playbook owns needs both halves:
   `tasks/main.yml`, for every config file, completion, extension, or harness
   detector directory
 
-That is how `gh`, `opencode`, and `pi` are handled: mise installs the binary,
-`tool_developer/tasks/postinstall-*.yml` owns the rest.
+That is how `gh`, `opencode`, `pi`, `java`, `maven`, and `kotlin` are handled:
+mise installs the binary, `tool_developer/tasks/postinstall-*.yml` owns the rest.
+
+### Multiple versions of one tool
+
+A `[tools]` value may be a list. mise installs every entry and resolves the
+**first** one as active, which replaces the old `sdk default` pattern:
+
+```toml
+java = ["temurin-25", "temurin-21"]   # 25 active, 21 installed and on PATH
+```
+
+Bare majors track the latest patch inside each major. Use a full identifier
+(`temurin-25.0.3+9.0.LTS`) only when a patch level must be pinned.
 
 A role whose only remaining job is configuration still stays a role. `tool_git`
 and `tool_vi` install nothing and are correct as they are.
@@ -53,10 +64,13 @@ before they were folded into `tool_developer`.
 ### New work is forward-only
 
 Existing roles keep the channel they have. `tool_claude_code` stays on
-`package_manager_npm`, `tool_jvm` on `package_manager_sdkman`,
-`tool_pre_commit` on `package_manager_pipx`. Folding one of them into mise is a
-deliberate refactor in its own commit, never a side effect of adding an
-unrelated tool.
+`package_manager_npm`, `tool_pre_commit` on `package_manager_pipx`,
+`tool_gnome_extensions` on `package_manager_flatpak` plus direct
+`get_url`. Folding one of them into mise is a deliberate refactor in its own
+commit, never a side effect of adding an unrelated tool.
+
+`tool_jvm` was the exception and is now gone: its four tools moved to
+`tool_developer` and `package_manager_sdkman` was removed with it.
 
 ## Priorities
 
@@ -140,8 +154,10 @@ conditions, split that phase into platform files and include them directly from
   - `package_manager_flatpak`: check presence, then configure remote and install packages
   - `package_manager_brew`: bootstrap Homebrew when missing, apply shellenv setup, then install packages
   - `package_manager_rpm_ostree`: check presence, configure COPR repos, then layer packages and report reboot need
-  - `package_manager_sdkman`: bootstrap SDKMAN when missing, ensure shell init blocks (`.bashrc` and `.zshrc`), then install candidates
   - `package_manager_pipx`: bootstrap pipx when missing, ensure application path, then install packages
+- `package_manager_sdkman` and `tool_jvm` were removed together; SDKMAN's only
+  consumer was `tool_jvm`. Do not reintroduce it — see "Multiple versions of one
+  tool" for the mise equivalent.
 - Tool roles may call package manager roles repeatedly; this is acceptable for
   readability.
 - `mise` is deliberately **not** one of these roles. It lives in `tool_developer`
@@ -154,11 +170,3 @@ conditions, split that phase into platform files and include them directly from
 - Package manager roles stay toolbox-agnostic.
 - Playbook controls toolbox execution via delegated role calls.
 - `toolbox_name` is set at playbook scope for Linux playbooks.
-
-## SDKMAN item format
-
-- Use a single list variable with one of:
-  - `candidate` (install default version)
-  - `candidate@identifier` (install exact version identifier)
-- For Java, identifier includes vendor/distribution suffix (for example
-  `21.0.8-tem`), so prefer explicit identifiers when pinning versions.

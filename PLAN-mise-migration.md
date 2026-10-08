@@ -4,8 +4,14 @@
 > now lives entirely in `tool_developer` with a static `files/config.toml`. The
 > phases below that plan to extend `package_manager_mise` (1, 2b, 2c, 3) need
 > re-reading against `ROLE_CONVENTIONS.md` → "Choosing an installation channel".
-> The channel-selection rule is forward-only: no existing role moves without a
-> deliberate refactor commit.
+>
+> **Phase 3 is done.** `tool_jvm` and `package_manager_sdkman` were removed; java,
+> maven, and kotlin now come from `tool_developer`'s `[tools]` table. Phase 4 is
+> likewise moot.
+>
+> What remains is Phase 2b/2c: nvm → mise for `tool_node`, `tool_claude_code`,
+> and `tool_uvcc`. The channel rule is forward-only — no existing role moves
+> without a deliberate refactor commit.
 
 ## Objective
 

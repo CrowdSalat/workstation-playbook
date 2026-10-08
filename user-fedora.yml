@@ -35,7 +35,6 @@
 
     roles_toolbox:
       - config_toolbox
-      - tool_jvm
       - tool_cli_utils
 
   tasks:

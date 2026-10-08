@@ -30,12 +30,17 @@ mise registry | grep -E '^<tool>[[:space:]]'   # a hit means mise can own the bi
 | Result | Do this |
 | --- | --- |
 | Registry hit | add `<tool> = "latest"` to `roles/tool_developer/files/config.toml`; stop |
-| Platform channel already owns it (flatpak, brew, rpm-ostree, SDKMAN, pipx) | keep it in the existing `tool_<name>` role |
+| Platform channel already owns it (flatpak, brew, rpm-ostree, pipx) | keep it in the existing `tool_<name>` role |
 | Neither | write a full `tool_<name>` role |
 
 Registry hit **plus** playbook-owned config (settings file, completions, extensions, harness detector dir) = both halves:
 - `[tools]` entry in `roles/tool_developer/files/config.toml`
 - `roles/tool_developer/tasks/postinstall-<tool>.yml`, wired from `tasks/main.yml`
+
+Need two versions of one tool? Use a list — mise installs all, first is active:
+```toml
+java = ["temurin-25", "temurin-21"]
+```
 
 Never create a `tool_<name>` role whose only job is a mise entry.
 

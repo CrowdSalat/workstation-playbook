@@ -14,8 +14,11 @@ golangci-lint = "latest"
 hadolint = "latest"
 herdr = "latest"
 infisical = "latest"
+java = ["temurin-25", "temurin-21"]
 jq = "latest"
+kotlin = "latest"
 make = "latest"
+maven = "latest"
 "npm:@opencode/cli" = { version = "latest", allow_builds = ["@opencode/cli"] }
 pi = "latest"
 ripgrep = "latest"

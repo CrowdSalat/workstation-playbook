@@ -16,8 +16,7 @@ This file defines high-level guidance for agents working inside this workspace.
 - Pick the installation channel before writing tasks. Prefer
   `tool_developer` (mise) when the tool has a mise registry entry; keep
   `package_manager_*` when a platform channel already owns the install
-  (flatpak, brew, rpm-ostree, SDKMAN, pipx); otherwise write a full
-  `tool_<name>` role.
+  (flatpak, brew, rpm-ostree, pipx); otherwise write a full `tool_<name>` role.
 - `mise` lives in `tool_developer`, not in a `package_manager_*` role — it owns
   the global `[tools]` table that its installs write to.
 - mise owns the binary; config, completions, and extensions stay with the role
@@ -78,5 +77,5 @@ This file defines high-level guidance for agents working inside this workspace.
 ## Detailed conventions
 
 See `ROLE_CONVENTIONS.md` for detailed implementation rules (installation
-channel selection, naming patterns, task file layout, toolbox model, SDKMAN
-item format).
+channel selection, multi-version tools, naming patterns, task file layout,
+toolbox model).

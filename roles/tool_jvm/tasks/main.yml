@@ -1,8 +1,0 @@
----
-- name: Install JVM tools on Linux
-  ansible.builtin.include_tasks: install-linux.yml
-  when: ansible_facts["system"] == "Linux"
-
-- name: Install JVM tools on macOS
-  ansible.builtin.include_tasks: install-mac.yml
-  when: ansible_facts["system"] == "Darwin"
