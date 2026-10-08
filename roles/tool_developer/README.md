@@ -13,6 +13,14 @@ to a `package_manager_*` role; it is the self-contained mise setup.
   file (`.bash_profile`, `.zprofile`) — non-interactive/login coverage.
 - Deploys the global config (`~/.config/mise/config.toml`) from a static
   `files/config.toml` dump, then runs `mise install` and verifies a tool.
+- Postinstall (`tasks/postinstall-opencode.yml`): deploys
+  `files/opencode.json` to `~/.config/opencode/opencode.json`. The directory
+  also doubles as the opencode detector for `config_agents_harnesses`.
+  `opencode` comes from the v2 channel via the npm backend entry
+  `"npm:@opencode/cli"` in `files/config.toml`, with `allow_builds`
+  restricted to that package (its postinstall downloads the native binary).
+  Note: the v1 line (`opencode-ai`, GitHub releases) is still `latest` on npm
+  as 1.x; do not switch back to the aqua `opencode` entry.
 
 ## Variables
 

@@ -11,6 +11,7 @@ hadolint = "latest"
 herdr = "latest"
 infisical = "latest"
 jq = "latest"
+"npm:@opencode/cli" = { version = "latest", allow_builds = ["@opencode/cli"] }
 ripgrep = "latest"
 terraform = "latest"
 yq = "latest"

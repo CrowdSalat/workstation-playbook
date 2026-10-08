@@ -1,0 +1,12 @@
+---
+- name: Ensure opencode config directory exists
+  ansible.builtin.file:
+    path: "{{ tool_developer_home }}/.config/opencode"
+    state: directory
+    mode: '0755'
+
+- name: Deploy opencode permission config
+  ansible.builtin.copy:
+    src: opencode.json
+    dest: "{{ tool_developer_home }}/.config/opencode/opencode.json"
+    mode: '0644'
