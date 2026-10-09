@@ -1,0 +1,39 @@
+---
+tool_ssh_dir: "{{ ansible_facts['env']['HOME'] }}/.ssh"
+tool_ssh_config_path: "{{ tool_ssh_dir }}/config"
+
+# Keys are named id_<type>_<purpose>. The purpose suffix is deliberate: a
+# default-named id_ed25519 is offered implicitly by every host, while a
+# purpose-suffixed key is only ever offered where ~/.ssh/config names it.
+# Keep ~/.ssh/config (files/ssh_config) in sync when adding a purpose.
+tool_ssh_key_type: ed25519
+tool_ssh_key_name_prefix: "id_{{ tool_ssh_key_type }}_"
+tool_ssh_identities:
+  - github
+  - openshift
+  - oracle-vls
+tool_ssh_git_identity: github
+
+tool_ssh_generate_keys: true
+
+tool_ssh_hostname: "{{ ansible_facts['hostname'] }}"
+tool_ssh_user: "{{ ansible_user_id }}"
+
+# Stamped once, when the key is generated. Re-running never rewrites an
+# existing comment, so this date records the original provisioning run rather
+# than the latest one.
+tool_ssh_key_created: "{{ ansible_date_time.date | default(lookup('pipe', 'date +%F'), true) }}"
+
+# Empty comment derives "<key name>@<user>@<host> <YYYY-MM-DD>", e.g.
+# "id_ed25519_github@jan@fedora 2026-10-09". Comments are free-form metadata:
+# no part of SSH resolution reads them, and they are the only field that
+# travels with the key into GitHub, OpenShift and Oracle key lists, where the
+# filename is not visible. The date makes a stale key identifiable later.
+# A non-empty value is applied verbatim to every identity.
+tool_ssh_key_comment: ""
+
+# Empty passphrase relies on the platform agent (GNOME on Fedora, launchd on
+# macOS) to cache the key for the session. This role does not run keychain, so
+# a non-empty passphrase needs an agent that prompts, or you get prompted on
+# every use.
+tool_ssh_key_passphrase: ""

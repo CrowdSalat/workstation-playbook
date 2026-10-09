@@ -1,0 +1,25 @@
+# Managed by Ansible (tool_ssh). Edit roles/tool_ssh/files/ssh_config instead;
+# this file is overwritten on every playbook run.
+#
+# Identities are purpose-suffixed (id_ed25519_<purpose>) and named explicitly
+# per host below. IdentitiesOnly is deliberately NOT set on "Host *": ssh only
+# ever offers the configured or default-named key files when it is set, so a
+# host without an explicit IdentityFile stanza would silently get no key at
+# all. Set it per host instead, where the key is known.
+
+Host *
+  AddKeysToAgent yes
+
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519_github
+  IdentitiesOnly yes
+
+Host openshift
+  IdentityFile ~/.ssh/id_ed25519_openshift
+  IdentitiesOnly yes
+
+Host oracle-vls
+  IdentityFile ~/.ssh/id_ed25519_oracle-vls
+  IdentitiesOnly yes

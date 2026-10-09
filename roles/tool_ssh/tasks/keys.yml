@@ -1,0 +1,128 @@
+---
+- name: Check whether ssh-keygen is available
+  ansible.builtin.shell: |
+    command -v ssh-keygen
+  args:
+    executable: /bin/bash
+  register: tool_ssh_keygen_check
+  changed_when: false
+  failed_when: false
+
+- name: Require ssh-keygen to provision SSH keys
+  ansible.builtin.assert:
+    that:
+      - tool_ssh_keygen_check.rc == 0
+    fail_msg: >-
+      tool_ssh found no ssh-keygen on PATH. Install openssh-clients on Fedora,
+      or re-run with -e tool_ssh_generate_keys=false to skip key provisioning.
+  when: tool_ssh_generate_keys | bool
+
+- name: Ensure SSH directory exists
+  ansible.builtin.file:
+    path: "{{ tool_ssh_dir }}"
+    state: directory
+    mode: "0700"
+
+# Presence is decided here rather than in changed_when: ansible-core 2.21 does
+# not inject stdout into changed_when for looped tasks, so gating on a stat is
+# both correct and the only portable form.
+- name: Inspect existing SSH key material
+  ansible.builtin.stat:
+    path: "{{ tool_ssh_dir }}/{{ tool_ssh_key_name_prefix }}{{ ssh_identity }}"
+  loop: "{{ tool_ssh_identities }}"
+  loop_control:
+    loop_var: ssh_identity
+  register: tool_ssh_key_stat
+
+- name: Record whether the GitHub key already existed
+  ansible.builtin.set_fact:
+    _tool_ssh_github_key_preexisted: >-
+      {{ tool_ssh_key_stat.results
+         | selectattr('ssh_identity', 'equalto', tool_ssh_git_identity)
+         | map(attribute='stat.exists') | first | default(false) }}
+
+# Paths below are rebuilt from the identity slug rather than read from
+# stat.path: for a path that does not exist, the stat module returns only
+# {"exists": false}, so stat.path is unreadable for exactly the keys missing
+# here.
+#
+# Never overwrites: a key restored from a backup or password manager is left
+# alone. Newly created keys get their modes set explicitly so they do not rely
+# on ssh-keygen's defaults.
+#
+# ansible-lint reports no-changed-when here. That is a false positive: the
+# per-item when below already skips keys that exist, so the task only runs when
+# it has to create something. Do not "fix" it with a stdout-based
+# changed_when - that form does not work on this ansible-core.
+- name: Generate missing SSH key pairs
+  ansible.builtin.shell: |
+    set -euo pipefail
+    umask 077
+    key="{{ tool_ssh_dir }}/{{ tool_ssh_key_name }}"
+    comment="{{ tool_ssh_key_comment | default(tool_ssh_default_comment, true) }}"
+    ssh-keygen -q -t {{ tool_ssh_key_type }} \
+      -C "$comment" \
+      -f "$key" -N "{{ tool_ssh_key_passphrase }}"
+    chmod 0600 "$key"
+    chmod 0644 "$key.pub"
+  args:
+    executable: /bin/bash
+  loop: "{{ tool_ssh_key_stat.results }}"
+  loop_control:
+    loop_var: key_result
+  vars:
+    tool_ssh_key_name: "{{ tool_ssh_key_name_prefix }}{{ key_result.ssh_identity }}"
+    tool_ssh_default_comment: >-
+      {{ tool_ssh_key_name ~ '@' ~ tool_ssh_user ~ '@' ~ tool_ssh_hostname
+         ~ ' ' ~ tool_ssh_key_created }}
+  register: tool_ssh_key_generate
+  when:
+    - tool_ssh_generate_keys | bool
+    - not key_result.stat.exists
+
+# Drift correction for keys that already existed, which generation skipped.
+- name: Restrict SSH private key permissions
+  ansible.builtin.file:
+    path: "{{ tool_ssh_dir }}/{{ tool_ssh_key_name_prefix }}{{ key_result.ssh_identity }}"
+    mode: "0600"
+  loop: "{{ tool_ssh_key_stat.results }}"
+  loop_control:
+    loop_var: key_result
+  when: key_result.stat.exists
+
+- name: Normalise SSH public key permissions
+  ansible.builtin.file:
+    path: "{{ tool_ssh_dir }}/{{ tool_ssh_key_name_prefix }}{{ key_result.ssh_identity }}.pub"
+    mode: "0644"
+  loop: "{{ tool_ssh_key_stat.results }}"
+  loop_control:
+    loop_var: key_result
+  when: key_result.stat.exists
+
+# Published as a fact rather than read from tool_ssh defaults: role defaults
+# are only visible for the rest of the play under include_role, while a fact
+# is unconditionally play-scoped.
+- name: Publish the resolved GitHub signing key for tool_git
+  ansible.builtin.set_fact:
+    workstation_ssh_git_public_key: "{{ tool_ssh_dir }}/{{ tool_ssh_key_name_prefix }}{{ tool_ssh_git_identity }}.pub"
+
+- name: Warn when key generation is disabled
+  ansible.builtin.debug:
+    msg: >-
+      tool_ssh_generate_keys is false, so no key material was created. Git push
+      over SSH and signed commits fail without
+      {{ workstation_ssh_git_public_key }}. Provision it by hand with:
+      ssh-keygen -t {{ tool_ssh_key_type }} -f
+      {{ tool_ssh_dir }}/{{ tool_ssh_key_name_prefix }}{{ tool_ssh_git_identity }} -N ""
+  when: not (tool_ssh_generate_keys | bool)
+
+- name: Remind to register the newly generated GitHub key
+  ansible.builtin.debug:
+    msg: |-
+      Register {{ workstation_ssh_git_public_key }} on GitHub in two places:
+        1. Settings -> SSH and GPG keys -> New SSH key         (for git@ push)
+        2. Settings -> SSH and GPG keys -> New SSH signing key (for commit.gpgsign)
+      Or run: gh ssh-key add {{ workstation_ssh_git_public_key }}
+  when:
+    - tool_ssh_generate_keys | bool
+    - not _tool_ssh_github_key_preexisted | bool

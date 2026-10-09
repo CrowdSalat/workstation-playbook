@@ -1,0 +1,6 @@
+---
+- name: Provision SSH key material
+  ansible.builtin.include_tasks: keys.yml
+
+- name: Deploy SSH client configuration
+  ansible.builtin.include_tasks: config.yml

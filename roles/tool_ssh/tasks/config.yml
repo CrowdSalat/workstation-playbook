@@ -1,0 +1,9 @@
+---
+# This role owns the whole file. Anything hand-added to ~/.ssh/config outside
+# the managed content is lost on the next run; keep custom stanzas in
+# files/ssh_config instead.
+- name: Deploy SSH client configuration
+  ansible.builtin.copy:
+    src: ssh_config
+    dest: "{{ tool_ssh_config_path }}"
+    mode: "0600"
