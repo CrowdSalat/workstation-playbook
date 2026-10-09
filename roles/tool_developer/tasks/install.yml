@@ -27,6 +27,23 @@
   register: tool_developer_mise_bootstrap
   changed_when: tool_developer_mise_bootstrap.rc == 0
 
+# Only for a mise that already existed: a fresh bootstrap is current by
+# definition, and skipping the call avoids a pointless release download.
+#
+# changed_when: mise prints "mise is already up to date" when there is nothing
+# to do, so absence of that line means it moved. mise's own minimum_release_age
+# setting still gates how new a release may be, so this never jumps to a build
+# published within that window.
+- name: Update mise when a newer release is available
+  ansible.builtin.command: "{{ tool_developer_home }}/.local/bin/mise self-update --yes"
+  environment:
+    HOME: "{{ tool_developer_home }}"
+  register: tool_developer_mise_self_update
+  changed_when: "'already up to date' not in (tool_developer_mise_self_update.stdout | default(''))"
+  when:
+    - tool_developer_mise_stat.stat.exists
+    - tool_developer_mise_self_update | bool
+
 - name: Enable mise activation in interactive rc files
   ansible.builtin.blockinfile:
     path: "{{ rc_file.path }}"

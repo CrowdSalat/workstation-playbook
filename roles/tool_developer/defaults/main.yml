@@ -6,6 +6,15 @@
 # under test.
 tool_developer_home: "{{ ansible_facts['env']['HOME'] }}"
 
+# mise ships self-update, and this install is a standalone binary rather than a
+# package, so nothing else would ever move it off the bootstrap version.
+#
+# Verified: trust is not affected by self-update. Trust lives in
+# ~/.local/state/mise/trusted-configs as entries keyed by config path, not by
+# content, so replacing the binary leaves it intact and this role rewriting
+# config.toml leaves it intact too.
+tool_developer_mise_self_update: true
+
 tool_developer_pi_extensions:
   - "npm:@ssweens/pi-vertex"
   - "npm:pi-lmstudio"
