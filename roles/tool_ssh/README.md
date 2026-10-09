@@ -19,11 +19,16 @@ Adding a purpose means editing both `tool_ssh_identities` and
 
 ## Key comments
 
-Derived as `<key name>@<user>@<host> <YYYY-MM-DD>`:
+Derived as `<key name>@<user>@<host>_<YYYY-MM-DD>`:
 
 ```
-id_ed25519_github@jan@fedora 2026-10-09
+id_ed25519_github@jan@fedora_2026-10-09
 ```
+
+**The format contains no spaces, deliberately.** GitHub derives an automatic key
+title from the comment when a key is uploaded and truncates at the first space,
+so a space-separated date would be silently dropped from the key title while
+still looking correct locally in `ssh-add -l`.
 
 Set `tool_ssh_key_comment` to override, which applies verbatim to every
 identity.

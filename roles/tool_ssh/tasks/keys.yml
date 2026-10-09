@@ -72,9 +72,11 @@
     loop_var: key_result
   vars:
     tool_ssh_key_name: "{{ tool_ssh_key_name_prefix }}{{ key_result.ssh_identity }}"
+    # No spaces: GitHub derives an automatic key title from the comment and
+    # truncates at the first space, so a space would silently drop the date.
     tool_ssh_default_comment: >-
       {{ tool_ssh_key_name ~ '@' ~ tool_ssh_user ~ '@' ~ tool_ssh_hostname
-         ~ ' ' ~ tool_ssh_key_created }}
+         ~ '_' ~ tool_ssh_key_created }}
   register: tool_ssh_key_generate
   when:
     - tool_ssh_generate_keys | bool
