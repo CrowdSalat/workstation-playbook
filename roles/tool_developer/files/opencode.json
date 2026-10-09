@@ -4,7 +4,10 @@
     "external_directory": {
       "*": "ask",
       "~/ws": "allow",
-      "~/ws/**": "allow"
+      "~/ws/**": "allow",
+      "/Projects": "allow",
+      "/tmp/opencode": "allow",
+      "/tmp/opencode/**": "allow"
     },
     "read": {
       "*": "allow",
