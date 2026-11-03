@@ -8,8 +8,8 @@
 
 - name: Manage Starship prompt config
   ansible.builtin.copy:
+    src: starship.toml
     dest: "{{ tool_starship_config_path }}"
-    content: "{{ tool_starship_config | trim ~ '\n' }}"
     mode: "0644"
   when: tool_starship_manage_config
 
@@ -21,6 +21,6 @@
       [[ "$TERM" != "dumb" ]] && eval "$({{ tool_starship_init_command }} init {{ rc_file.name }})"
     create: true
     insertafter: EOF
-  loop: "{{ shell_rc_files }}"
+  loop: "{{ shell_rc_files | default([]) }}"
   loop_control:
     loop_var: rc_file

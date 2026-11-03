@@ -1,11 +1,9 @@
 ---
+# Pin an explicit X.Y.Z version, or leave empty to track the newest release.
 tool_starship_version: ""
-tool_starship_url: "https://github.com/starship/starship/releases/download/v{{ tool_starship_version }}/starship-x86_64-unknown-linux-gnu.tar.gz"
+tool_starship_releases_url: "https://github.com/starship/starship/releases"
 tool_starship_local_bin: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
+tool_starship_cache_dir: "{{ ansible_facts['env']['HOME'] }}/.cache/starship"
 tool_starship_config_dir: "{{ ansible_facts['env']['HOME'] }}/.config"
 tool_starship_config_path: "{{ tool_starship_config_dir }}/starship.toml"
 tool_starship_manage_config: true
-# Full starship.toml content. Override this multiline string per host/group/playbook.
-tool_starship_config: |
-  [gcloud]
-  disabled = true
