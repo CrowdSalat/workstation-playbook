@@ -1,19 +1,26 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "permission": {
-    "external_directory": {
-      "*": "ask",
-      "~/ws": "allow",
-      "~/ws/**": "allow",
-      "/Projects": "allow",
-      "/tmp/opencode": "allow",
-      "/tmp/opencode/**": "allow"
-    },
-    "read": {
-      "*": "allow",
-      "*.env": "deny",
-      "*.env.*": "deny",
-      "*.env.example": "allow"
-    }
-  }
+  "permissions": [
+    { "action": "external_directory", "resource": "*", "effect": "ask" },
+
+    { "action": "external_directory", "resource": "~/ws", "effect": "allow" },
+    { "action": "external_directory", "resource": "~/ws/*", "effect": "allow" },
+
+    { "action": "external_directory", "resource": "/Projects", "effect": "allow" },
+    { "action": "external_directory", "resource": "/Projects/*", "effect": "allow" },
+
+    { "action": "external_directory", "resource": "/tmp/opencode", "effect": "allow" },
+    { "action": "external_directory", "resource": "/tmp/opencode/*", "effect": "allow" },
+
+    { "action": "external_directory", "resource": "~/ws/sensitive", "effect": "deny" },
+    { "action": "external_directory", "resource": "~/ws/sensitive/*", "effect": "deny" },
+
+    { "action": "external_directory", "resource": "/Projects/sensitive", "effect": "deny" },
+    { "action": "external_directory", "resource": "/Projects/sensitive/*", "effect": "deny" },
+
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" }
+  ]
 }
