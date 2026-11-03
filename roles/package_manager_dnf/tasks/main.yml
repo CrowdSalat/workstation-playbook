@@ -11,9 +11,21 @@
       - package_manager_dnf_check.rc == 0
     fail_msg: "dnf is required for package_manager_dnf."
 
-- name: "Install dnf packages: {{ package_manager_dnf_packages | join(', ') }}"
+- name: Enable COPR repositories for dnf packages
+  ansible.builtin.get_url:
+    url: "https://copr.fedorainfracloud.org/coprs/{{ rpm_pkg.copr }}/repo/fedora-{{ ansible_facts['distribution_major_version'] }}/{{ rpm_pkg.copr | replace('/', '-') }}-fedora-{{ ansible_facts['distribution_major_version'] }}.repo"
+    dest: "/etc/yum.repos.d/{{ rpm_pkg.copr | replace('/', '-') }}.repo"
+    mode: "0644"
+  loop: "{{ package_manager_dnf_packages | selectattr('copr', 'defined') | list }}"
+  loop_control:
+    loop_var: rpm_pkg
+    label: "{{ rpm_pkg.copr }}"
+  become: true
+
+- name: "Install dnf packages: {{ package_manager_dnf_packages | map(attribute='name') | join(', ') }}"
   ansible.builtin.command: >
-    sudo dnf install -y {{ package_manager_dnf_packages | join(' ') }}
+    dnf install -y {{ package_manager_dnf_packages | map(attribute='name') | join(' ') }}
   register: package_manager_dnf_install
-  changed_when: "'Nothing to do.' not in package_manager_dnf_install.stdout"
+  changed_when: "'Nothing to do.' not in (package_manager_dnf_install.stdout | default(''))"
+  become: true
   when: package_manager_dnf_packages | length > 0

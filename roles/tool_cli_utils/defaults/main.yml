@@ -1,7 +1,7 @@
 ---
 tool_cli_utils_linux_dnf_packages:
-  - tree
-  - watch
+  - name: tree
+  - name: watch
 
 tool_cli_utils_macos_brew_formulae:
   - tree

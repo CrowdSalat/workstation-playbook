@@ -30,7 +30,7 @@ mise registry | grep -E '^<tool>[[:space:]]'   # a hit means mise can own the bi
 | Result | Do this |
 | --- | --- |
 | Registry hit | add `<tool> = "latest"` to `roles/tool_developer/files/config.toml`; stop |
-| Platform channel already owns it (flatpak, brew, rpm-ostree, pipx) | keep it in the existing `tool_<name>` role |
+| Platform channel already owns it (flatpak, brew, Fedora RPM channel, pipx) | keep it in the existing `tool_<name>` role |
 | Neither | write a full `tool_<name>` role |
 
 Registry hit **plus** playbook-owned config (settings file, completions, extensions, harness detector dir) = both halves:
@@ -52,7 +52,8 @@ Prefer extending an existing `tool_<name>`; create a new role only when nothing 
 1. `tasks/main.yml` — install/postinstall phases; split by OS only when branching dominates.
 2. Follow `ROLE_CONVENTIONS.md` (channel selection, phase layout, package manager helpers, CLI completion).
 3. Register: Fedora `user-fedora.yml` (`roles_host`, or `roles_toolbox` for toolbox tools); macOS `user-macos.yml` (`roles_host`).
-4. Toolbox context also needs `toolbox_name`; toolbox prereqs run only when `roles_toolbox | length > 0`.
+4. Fedora has two RPM channels: use `fedora_package_manager` (`rpm_ostree` on Atomic, `dnf` on classic) instead of hardcoding one. Atomic uses `roles_toolbox`; classic runs CLI tools on the host.
+5. Toolbox context also needs `toolbox_name`; toolbox prereqs run only when `roles_toolbox | length > 0`. The playbook sets these per variant.
 
 ## Role families
 - `tool_*`: user-facing intent (install + config)
@@ -64,7 +65,9 @@ Prefer extending an existing `tool_<name>`; create a new role only when nothing 
 
 ## Run the playbook
 ```bash
-ansible-playbook -i inventory.yml user-fedora.yml                      # Fedora
+ansible-playbook -i inventory.yml user-fedora.yml                      # Fedora (auto-detects Atomic vs classic)
+ansible-playbook -i inventory.yml user-fedora.yml -e fedora_variant=atomic   # force Atomic
+ansible-playbook -i inventory.yml user-fedora.yml -e fedora_variant=classic  # force classic
 ansible-playbook -i inventory.yml user-macos.yml                       # macOS
 ansible-playbook -i inventory.yml user-fedora.yml -e '{"roles_host":["tool_vscodium"],"roles_toolbox":[]}'  # single role
 ```

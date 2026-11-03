@@ -49,7 +49,9 @@ This file defines high-level guidance for agents working inside this workspace.
 
 - Fedora uses split role lists:
   - `roles_host`
-  - `roles_toolbox`
+  - `roles_toolbox` (Fedora Atomic only; classic Fedora runs host-only)
+- `fedora_variant` (`auto`/`atomic`/`classic`) selects the RPM channel:
+  `rpm_ostree` on Atomic, `dnf` on classic.
 - macOS uses host list:
   - `roles_host`
 - Toolbox prerequisites in playbook tasks should run only when

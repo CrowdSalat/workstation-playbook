@@ -17,9 +17,10 @@ implementation detail to settle once tasks exist.
    `roles/tool_developer/files/config.toml` and stop there.
 
 2. **Does a platform channel already own the install?** If the role goes
-   through `package_manager_flatpak`, `package_manager_brew`,
-   `package_manager_rpm_ostree`, or `package_manager_pipx`, it stays there. mise
-   does not replace flatpak, Homebrew casks, COPR layering, or pipx apps.
+   through `package_manager_flatpak`, `package_manager_brew`, the Fedora RPM
+   channel (`package_manager_rpm_ostree` on Atomic, `package_manager_dnf` on
+   classic), or `package_manager_pipx`, it stays there. mise does not replace
+   flatpak, Homebrew casks, COPR layering, or pipx apps.
 
 3. **Otherwise: a full `tool_<name>` role.** Use the vendor's supported path —
    a `package_manager_*` helper when one fits, or direct modules (`get_url`,
@@ -125,11 +126,14 @@ conditions, split that phase into platform files and include them directly from
 ## Playbook registration
 
 - Register new roles in the playbooks:
-  - `user-fedora.yml`: `roles_host` for host tools, `roles_toolbox` for toolbox
-    tools.
+  - `user-fedora.yml`: `roles_host` for host tools; on Fedora Atomic,
+    `roles_toolbox` for toolbox tools. `fedora_variant` (`auto`, `atomic`,
+    `classic`) resolves the RPM channel and toolbox layer; classic Fedora runs
+    `tool_cli_utils` on the host.
   - `user-macos.yml`: `roles_host` only (no toolbox).
 - Toolbox context also needs `toolbox_name`; toolbox prerequisites run only when
-  `roles_toolbox | length > 0`.
+  `roles_toolbox | length > 0`. The playbook defines `toolbox_name` and registers
+  `toolbox_main` dynamically when the toolbox layer is active.
 - Keep related roles grouped in the lists (for example cloud CLIs together).
 
 ## Agent harness configuration ownership
@@ -153,7 +157,8 @@ conditions, split that phase into platform files and include them directly from
 - Keep behavior explicit per manager:
   - `package_manager_flatpak`: check presence, then configure remote and install packages
   - `package_manager_brew`: bootstrap Homebrew when missing, apply shellenv setup, then install packages
-  - `package_manager_rpm_ostree`: check presence, configure COPR repos, then layer packages and report reboot need
+  - `package_manager_dnf`: check presence, configure COPR repos, then install packages (classic Fedora and toolbox contexts)
+  - `package_manager_rpm_ostree`: check presence, configure COPR repos, then layer packages and report reboot need (Fedora Atomic host)
   - `package_manager_pipx`: bootstrap pipx when missing, ensure application path, then install packages
 - `package_manager_sdkman` and `tool_jvm` were removed together; SDKMAN's only
   consumer was `tool_jvm`. Do not reintroduce it — see "Multiple versions of one
@@ -164,9 +169,23 @@ conditions, split that phase into platform files and include them directly from
   because it also owns the global `[tools]` table that its installs write to.
   See "Choosing an installation channel" above.
 
+## Fedora variants
+
+- Detect an immutable host with `/run/ostree-booted`, not `command -v rpm-ostree`
+  (rpm-ostree can be installed on classic Fedora).
+- `user-fedora.yml` exposes `fedora_variant: auto|atomic|classic` and sets
+  `fedora_package_manager` to `rpm_ostree` or `dnf`.
+- Host RPM tool roles branch on `fedora_package_manager`; they must not hardcode
+  a single Fedora channel.
+- Atomic Fedora uses the toolbox execution layer for CLI tools; classic Fedora
+  installs them on the host by default (`tool_cli_utils`).
+- `toolbox_name` is defined only when the toolbox layer is active. The playbook
+  registers `toolbox_main` with `add_host` so the container name and user match
+  the current host.
+
 ## Toolbox execution context
 
 - Treat toolbox as an execution-context layer on Linux, not as a normal tool.
 - Package manager roles stay toolbox-agnostic.
 - Playbook controls toolbox execution via delegated role calls.
-- `toolbox_name` is set at playbook scope for Linux playbooks.
+- `toolbox_name` is set at playbook scope only when the toolbox layer is active.

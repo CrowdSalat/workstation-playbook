@@ -1,12 +1,13 @@
 ---
-- name: Fedora workstation (experimental per-tool roles)
+- name: Fedora workstation (atomic or classic)
   hosts: localhost
   gather_facts: true
 
   vars:
+    # auto detects /run/ostree-booted; override with atomic or classic.
+    fedora_variant: auto
     shell_rc_files:
       - { path: "{{ ansible_facts['env']['HOME'] }}/.bashrc", name: bash }
-    toolbox_name: "fedora-toolbox-43"
     roles_host:
       - tool_ssh
       - tool_git
@@ -29,11 +30,63 @@
       - config_gnome_shortcuts
       - tool_vi
 
-    roles_toolbox:
-      - config_toolbox
-      - tool_cli_utils
+    # Populated by the atomic branch below; classic Fedora runs without toolbox.
+    roles_toolbox: []
 
   tasks:
+    - name: Validate Fedora variant
+      ansible.builtin.assert:
+        that:
+          - fedora_variant in ['auto', 'atomic', 'classic']
+        fail_msg: "fedora_variant must be one of: auto, atomic, classic."
+
+    - name: Detect an ostree-booted Fedora
+      ansible.builtin.stat:
+        path: /run/ostree-booted
+      register: fedora_ostree_booted
+      when: fedora_variant == 'auto'
+
+    - name: Resolve Fedora variant
+      ansible.builtin.set_fact:
+        fedora_is_atomic: >-
+          {{ ((fedora_variant == 'atomic')
+              or (fedora_variant == 'auto'
+                  and fedora_ostree_booted is defined
+                  and fedora_ostree_booted.stat.exists)) | bool }}
+
+    - name: Select Fedora RPM package manager
+      ansible.builtin.set_fact:
+        fedora_package_manager: "{{ 'rpm_ostree' if (fedora_is_atomic | bool) else 'dnf' }}"
+
+    - name: Add host CLI utilities on traditional Fedora
+      ansible.builtin.set_fact:
+        roles_host: "{{ roles_host + ['tool_cli_utils'] }}"
+      when: not (fedora_is_atomic | bool)
+
+    - name: Configure toolbox roles on Fedora Atomic
+      ansible.builtin.set_fact:
+        roles_toolbox:
+          - config_toolbox
+          - tool_cli_utils
+        toolbox_name: "fedora-toolbox-{{ ansible_facts['distribution_major_version'] }}"
+      when: fedora_is_atomic | bool
+
+    - name: Require a toolbox name when toolbox roles are enabled
+      ansible.builtin.assert:
+        that:
+          - toolbox_name is defined
+        fail_msg: "roles_toolbox requires toolbox_name; set it explicitly or use fedora_variant=atomic."
+      when: roles_toolbox | length > 0
+
+    - name: Register the toolbox container as a delegated host
+      ansible.builtin.add_host:
+        name: toolbox_main
+        ansible_connection: containers.podman.podman
+        ansible_host: "{{ toolbox_name }}"
+        ansible_user: "{{ ansible_facts['user_id'] }}"
+        ansible_python_interpreter: /usr/bin/python3
+      when: roles_toolbox | length > 0
+
     - name: Check toolbox availability
       ansible.builtin.shell: command -v toolbox
       register: toolbox_check

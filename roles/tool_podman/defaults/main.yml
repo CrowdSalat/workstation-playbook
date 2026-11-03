@@ -1,5 +1,5 @@
 ---
-tool_podman_linux_rpm_ostree_packages:
+tool_podman_linux_packages:
   - name: podman
   - name: podman-compose
 
