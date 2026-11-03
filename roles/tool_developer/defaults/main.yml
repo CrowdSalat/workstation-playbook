@@ -15,6 +15,13 @@ tool_developer_home: "{{ ansible_facts['env']['HOME'] }}"
 # config.toml leaves it intact too.
 tool_developer_mise_self_update: true
 
+# `mise install` only installs missing versions; it leaves an existing tool at
+# whatever version was installed first. `mise upgrade` installs missing tools
+# and upgrades installed ones within the configured range (`latest`,
+# `temurin-25`, ...), so it is the default. Set to false for install-only
+# behavior.
+tool_developer_mise_upgrade: true
+
 tool_developer_pi_extensions:
   - "npm:@ssweens/pi-vertex"
   - "npm:pi-lmstudio"

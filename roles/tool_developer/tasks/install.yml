@@ -78,7 +78,31 @@
     dest: "{{ tool_developer_home }}/.config/mise/config.toml"
     mode: '0644'
 
-- name: Install global tools from mise config
+# `mise install` only installs missing versions, so a `latest` entry stays at
+# whatever version was installed first. `mise upgrade` installs missing tools
+# and upgrades installed ones within their configured range. The dry-run check
+# provides a reliable changed signal without parsing human-readable output.
+- name: Check for mise tool installs or upgrades
+  ansible.builtin.command: "{{ tool_developer_home }}/.local/bin/mise upgrade --dry-run-code"
+  environment:
+    HOME: "{{ tool_developer_home }}"
+  register: tool_developer_mise_upgrade_check
+  changed_when: false
+  failed_when: tool_developer_mise_upgrade_check.rc not in [0, 1]
+  when: tool_developer_mise_upgrade | bool
+
+- name: Install or upgrade global tools from mise config
+  ansible.builtin.command: "{{ tool_developer_home }}/.local/bin/mise upgrade"
+  environment:
+    HOME: "{{ tool_developer_home }}"
+  when:
+    - tool_developer_mise_upgrade | bool
+    - tool_developer_mise_upgrade_check.rc | default(0) == 1
+
+- name: Install global tools from mise config without upgrading
   ansible.builtin.command: "{{ tool_developer_home }}/.local/bin/mise install"
+  environment:
+    HOME: "{{ tool_developer_home }}"
   register: tool_developer_mise_install
   changed_when: false
+  when: not (tool_developer_mise_upgrade | bool)

@@ -12,7 +12,9 @@ to a `package_manager_*` role; it is the self-contained mise setup.
 - Adds `eval "$(~/.local/bin/mise activate <shell> --shims)"` to each profile
   file (`.bash_profile`, `.zprofile`) — non-interactive/login coverage.
 - Deploys the global config (`~/.config/mise/config.toml`) from a static
-  `files/config.toml` dump, then runs `mise install` and verifies a tool.
+  `files/config.toml` dump, then runs `mise upgrade` (installs missing tools
+  and upgrades installed ones within their configured range). Set
+  `tool_developer_mise_upgrade: false` for install-only behavior.
 - Postinstall (`tasks/postinstall-opencode.yml`): deploys
   `files/opencode.json` to `~/.config/opencode/opencode.json`. The directory
   also doubles as the opencode detector for `config_agents_harnesses`.
@@ -39,6 +41,7 @@ to a `package_manager_*` role; it is the self-contained mise setup.
 | Variable                       | Default                                     | Description                           |
 | ------------------------------ | ------------------------------------------- | ------------------------------------- |
 | `tool_developer_home`          | `{{ ansible_facts['env']['HOME'] }}`        | Home to wire shell files under.       |
+| `tool_developer_mise_upgrade`  | `true`                                      | Upgrade installed tools on each run.  |
 | `tool_developer_pi_extensions` | `[npm:@ssweens/pi-vertex, npm:pi-lmstudio]` | Extensions installed by `pi install`. |
 
 ## The mise integration model (gist of the design discussion)
@@ -99,6 +102,10 @@ same pattern as CI.
 
 ## Notes / caveats
 
+- `mise upgrade` respects `minimum_release_age` (24h by default), so a release
+  published within that window is skipped until it is old enough. Replaced
+  versions are kept for `upgrade.prune_after` (24h by default) before being
+  pruned.
 - The global config is a static dump; manual `mise use -g` writes are
   overwritten on the next run. Edit `files/config.toml` instead.
 - Interactive shells keep shims on PATH as an auto-install fallback behind the
