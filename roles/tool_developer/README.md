@@ -102,6 +102,13 @@ same pattern as CI.
 
 ## Notes / caveats
 
+- **Known gap:** a process started with a clean environment (`env -i bash -c`,
+  cron, systemd user units, daemonized agent harnesses) reads no rc or profile
+  file, so neither `mise` nor the shims are on `PATH`. This role does not close
+  that gap; use the per-context recipes above or `mise exec`. Closing it
+  properly means the launcher supplies the shims/`~/.local/bin` PATH (or
+  `BASH_ENV`), which a future role change can wire for the contexts that
+  support it.
 - `mise upgrade` respects `minimum_release_age` (24h by default), so a release
   published within that window is skipped until it is old enough. Replaced
   versions are kept for `upgrade.prune_after` (24h by default) before being
